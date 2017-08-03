@@ -1,6 +1,7 @@
 package com.cxh.model;
 
-import java.util.List;
+
+import com.cxh.Enum.ClassType;
 
 /**
  * 解析java文件生成的实体类对象
@@ -12,7 +13,7 @@ public class Clazz {
 	
 	private String clazzName;
 	
-	private String clazzAnnotation;
+	private String[] clazzAnnotation;
 	
 	private String staticCodeBlock;
 	
@@ -49,7 +50,7 @@ public class Clazz {
 	}
 	/**
 	 * 设置该类的内部类列表
-	 * @return
+	 * @param lnternalClass
 	 */
 	public void setLnternalClass(Clazz[] lnternalClass) {
 		this.lnternalClass = lnternalClass;
@@ -63,7 +64,7 @@ public class Clazz {
 	}
 	/**
 	 * 设置该类的内容
-	 * @return
+	 * @param content
 	 */
 	public void setContent(String content) {
 		this.content = content;
@@ -78,47 +79,58 @@ public class Clazz {
 	}
 	/**
 	 * 设置该类的类名
-	 * @return
+	 * @param clazzName
 	 */
 	public void setClazzName(String clazzName) {
 		this.clazzName = clazzName;
 	}
+
 	/**
-	 * 设置该类的类名
+	 * 得到该类的静态代码块
 	 * @return
 	 */
-	public String getClazzAnnotation() {
-		return clazzAnnotation;
-	}
-
-	public void setClazzAnnotation(String clazzAnnotation) {
-		this.clazzAnnotation = clazzAnnotation;
-	}
-
 	public String getStaticCodeBlock() {
 		return staticCodeBlock;
 	}
-
+	/**
+	 * 设置该类的静态代码块
+	 * @param staticCodeBlock
+	 */
 	public void setStaticCodeBlock(String staticCodeBlock) {
 		this.staticCodeBlock = staticCodeBlock;
 	}
-
+	/**
+	 * 得到该类的构造代码块
+	 */
 	public String getConstructCodeBlock() {
 		return constructCodeBlock;
 	}
-
+	/**
+	 * 设置该类的构造代码块
+	 * @param staticCodeBlock
+	 */
 	public void setConstructCodeBlock(String constructCodeBlock) {
 		this.constructCodeBlock = constructCodeBlock;
 	}
-
+	/**
+	 * 得到该类的方法合集
+	 * @return
+	 */
 	public Method[] getMethods() {
 		return methods;
 	}
-
+	/**
+	 * 设置该类的方法合集
+	 * @param methods
+	 */
 	public void setMethods(Method[] methods) {
 		this.methods = methods;
 	}
-
+	
+	/**
+	 * 得到
+	 * @return
+	 */
 	public Field[] getFields() {
 		return fields;
 	}

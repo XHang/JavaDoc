@@ -1,4 +1,4 @@
-package com.cxh.model;
+package com.cxh.Enum;
 
 /**
  * 解析的java文件类别
