@@ -8,13 +8,15 @@ package com.cxh.model;
 public class Field {
 	private  String content;
 	
-	private String annotation;
+	private String[] annotation;
 	
 	private String modifyMark;
 	
 	private String fieldType;
 	
 	private String fieldName;
+	
+	private String comment;
 
 	/**
 	 * 获取字段的属性名
@@ -49,16 +51,31 @@ public class Field {
 	 * 得到字段注解
 	 * @return
 	 */
-	public String getAnnotation() {
+	public String[] getAnnotation() {
 		return annotation;
 	}
 	/**
 	 * 设置字段注解
 	 * @param annotation
 	 */
-	public void setAnnotation(String annotation) {
+	public void setAnnotation(String[] annotation) {
 		this.annotation = annotation;
 	}
+	/**
+	 * 获取字段上的注释
+	 * @return
+	 */
+	public String getComment() {
+		return comment;
+	}
+	/**
+	 * 设置字段上的注释
+	 * @return
+	 */
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
+
 	/**
 	 * 得到字段的修饰符<br>
 	 * eg:public static final

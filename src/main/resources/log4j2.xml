@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+  <Appenders>
+    <Console name="Console" target="SYSTEM_OUT">
+      <PatternLayout charset="utf-8"  pattern="%p:%msg 时间:%d{yyyy-mm-dd  HH:mm:ss}   记录器名字:%c  %n" />
+    </Console>
+  </Appenders>
+  <Loggers>
+    <Root level="error">
+      <AppenderRef ref="Console"/>
+    </Root>
+     <Logger name="com.cxh" level="info" additivity="false">
+     	<AppenderRef ref="Console"/>
+   	 </Logger>
+  </Loggers>
+</Configuration>

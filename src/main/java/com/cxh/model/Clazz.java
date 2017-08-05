@@ -128,39 +128,75 @@ public class Clazz {
 	}
 	
 	/**
-	 * 得到
+	 * 得到该类的字段集合
 	 * @return
 	 */
 	public Field[] getFields() {
 		return fields;
 	}
-
+	/**
+	 * 设置该类的字段集合
+	 * @param fields
+	 */
 	public void setFields(Field[] fields) {
 		this.fields = fields;
 	}
-
+	/**
+	 * 获取该类的类型（接口？枚举？）
+	 * @return
+	 */
 	public ClassType getType() {
 		return type;
 	}
-
+	/**
+	 * 设置该类的类型（接口？枚举？）
+	 * @return
+	 */
 	public void setType(ClassType type) {
 		this.type = type;
 	}
-
+	/**
+	 * 得到包名
+	 * @return
+	 */
 	public String getPackageName() {
 		return packageName;
 	}
-
+	/**
+	 * 设置包名
+	 * @return
+	 */
 	public void setPackageName(String packageName) {
 		this.packageName = packageName;
 	}
-
+	/**
+	 * 得到类的import列表
+	 * @return
+	 */
 	public String[] getImportList() {
 		return importList;
 	}
-
+	/**
+	 * 设置该类的import列表
+	 * @param importList
+	 */
 	public void setImportList(String[] importList) {
 		this.importList = importList;
+	}
+	/**
+	 * 得到该类的注解
+	 * @return
+	 */
+	
+	public String[] getClazzAnnotation() {
+		return clazzAnnotation;
+	}
+	/**
+	 * 设置该类的注解
+	 * @param clazzAnnotation
+	 */
+	public void setClazzAnnotation(String[] clazzAnnotation) {
+		this.clazzAnnotation = clazzAnnotation;
 	}
 
 	private ClassType type;
