@@ -46,12 +46,7 @@ public class JavaFileUitl extends TemplatedesignIO{
 		return clazz;
 	}
 	
-	 /**
-		 * 变速箱型式
-		 * 数据类型:VARCHAR
-		 */
-			
-		private String  gearboxtype;
+
 	
 	private void dealField(Clazz clazz,String clazzStr){
 		String commentReg = "\\/\\*[\\s\\S]*?\\*\\/";
