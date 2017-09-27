@@ -1,6 +1,8 @@
 package com.cxh.model;
 
 
+import java.util.List;
+
 import com.cxh.Enum.ClassType;
 
 /**
@@ -21,7 +23,7 @@ public class Clazz {
 	
 	private Method[] methods;
 	
-	private Field[]  fields;
+	private List<Field>  fields;
 	
 	private Clazz[] lnternalClass;
 	
@@ -131,14 +133,14 @@ public class Clazz {
 	 * 得到该类的字段集合
 	 * @return
 	 */
-	public Field[] getFields() {
+	public List<Field> getFields() {
 		return fields;
 	}
 	/**
 	 * 设置该类的字段集合
 	 * @param fields
 	 */
-	public void setFields(Field[] fields) {
+	public void setFields(List<Field> fields) {
 		this.fields = fields;
 	}
 	/**
