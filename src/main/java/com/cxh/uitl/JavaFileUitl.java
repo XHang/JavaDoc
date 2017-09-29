@@ -46,12 +46,15 @@ public class JavaFileUitl extends TemplatedesignIO{
 		return clazz;
 	}
 	
-
+	/**
+	 * 用户名
+	 */
+	private String userName;
 	
 	private void dealField(Clazz clazz,String clazzStr){
 		String commentReg = "\\/\\*[\\s\\S]*?\\*\\/";
-		String fieldReg= "private\\s+\\w+\\s+[a-z]\\w*?;";
-		Pattern reg=Pattern.compile(commentReg+"\\s*?"+fieldReg);
+		String fieldReg= "(private|public|\\s)\\s+\\w+\\s+[a-z]\\w*?;";
+		Pattern reg=Pattern.compile(fieldReg);
 		Matcher matcher=reg.matcher(clazzStr);
 		while(matcher.find()){
 			System.out.println(matcher.group());

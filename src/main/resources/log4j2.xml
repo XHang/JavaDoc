@@ -2,7 +2,7 @@
 <Configuration status="WARN">
   <Appenders>
     <Console name="Console" target="SYSTEM_OUT">
-      <PatternLayout charset="utf-8"  pattern="%p:%msg 时间:%d{yyyy-mm-dd  HH:mm:ss}   记录器名字:%c  %n" />
+      <PatternLayout charset="utf-8"  pattern="%d{yyyy-mm-dd  HH:mm:ss} %c  %p:%msg  %n" />
     </Console>
   </Appenders>
   <Loggers>

@@ -7,7 +7,7 @@ import org.junit.Test;
 public class JavaFileUitlTest {
 	@Test
 	public void testReadFileToClazz() throws IOException{
-		String filepath ="1";
+		String filepath ="C:\\Users\\Administrator\\git\\JavaDoc\\src\\main\\resources\\Test.java";
 		JavaFileUitl.readFileToClazz(filepath);
 	}
 }
