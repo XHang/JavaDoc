@@ -2,6 +2,7 @@ package com.generatedoc.entity;
 
 import com.generatedoc.emnu.RequestType;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class ApiInterface {
@@ -34,5 +35,23 @@ public class ApiInterface {
      * 接口返回值的解释
      */
     private List<ReturnFieldDesc> returnFieldDesc;
+
+    /**
+     * 返回值示例。
+     */
+    private String returnExample;
+
+    /**
+     * 接口描述
+     */
+    private String desc;
+
+    /**
+     * 接口编写日期
+     */
+    private LocalDateTime time;
+
+
+
 
 }
