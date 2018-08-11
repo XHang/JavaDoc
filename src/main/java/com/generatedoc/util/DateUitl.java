@@ -1,4 +1,4 @@
-package com.generatedoc.emnu.com.generatedoc.util;
+package com.generatedoc.util;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

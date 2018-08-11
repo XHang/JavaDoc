@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+	<properties>
+		<property name="FilePath">/logs/</property>
+	</properties>
+	<Appenders>
+		<!--控台日志输出 -->
+		<Console name="Console" target="SYSTEM_OUT" follow="true">
+			<PatternLayout>
+				<!--<pattern>%d %p %C{1.} [%t] %m%n</pattern> -->
+				<pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} [TYPE: %p | FROM: %C{1.} %M | TEXT: %m ]%n</pattern>
+			</PatternLayout>
+		</Console>
+		<!--DEBUG -->
+		<RollingFile name="RollingFileDebug" fileName="${FilePath}info.log"
+			filePattern="${FilePath}debug-%d{yyyy-MM-dd}.log" append="true">
+			<ThresholdFilter level="debug" onMatch="ACCEPT"
+				onMismatch="DENY" />
+			<PatternLayout
+				pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [TYPE: %p | FROM: %C{1.} %M | TEXT: %m ]%n" />
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1" />
+			</Policies>
+		</RollingFile>
+	</Appenders>
+	<Loggers>
+		<!--业务日志级别为debug -->
+		<Logger level="debug" name="com.generatedoc" additivity="true">
+			<appender-ref ref="RollingFileDebug" />
+			<appender-ref ref="Console" />
+		</Logger>
+		<Root level="info">
+			<AppenderRef ref="Console"/>
+		</Root>
+	</Loggers>
+</Configuration>
