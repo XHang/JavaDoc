@@ -15,13 +15,19 @@ public class JavaFileFilter implements IOFileFilter {
     public boolean accept(File file) {
         String filName = file.getName();
         logger.info("已扫描文件："+filName);
-        return true;
+        return FileUtil.isJavaFile(file);
     }
 
+    /**
+     * 暂时不知道此方法的作用,但是也没调用过
+     * @param dir
+     * @param name
+     * @return
+     */
     @Override
     public boolean accept(File dir, String name) {
         logger.info("当前扫描的文件夹名称为："+dir.getName());
         logger.info("name");
-        return true;
+        throw new RuntimeException("出现该BUG请及时通知我");
     }
 }

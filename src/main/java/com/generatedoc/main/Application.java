@@ -5,6 +5,7 @@ import com.generatedoc.template.JavaFileFilter;
 import com.generatedoc.util.FileUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -27,7 +28,8 @@ public class Application {
      * @return java文件列表
      */
    public  static List<File> getJavaFilesByPath(String path){
-        Collection<File> files = FileUtils.listFiles(new File(path),new JavaFileFilter(),null);
+
+        Collection<File> files = FileUtils.listFiles(new File(path),new JavaFileFilter(),TrueFileFilter.TRUE);
         return new ArrayList<>(files);
    }
 
