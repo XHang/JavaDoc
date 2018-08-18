@@ -38,4 +38,43 @@ public class APIDocument {
      */
     private List<ApiInterface> apiInterface;
 
+    public String getDocumentName() {
+        return documentName;
+    }
+
+    public void setDocumentName(String documentName) {
+        this.documentName = documentName;
+    }
+
+    public String getInterfaceDesc() {
+        return interfaceDesc;
+    }
+
+    public void setInterfaceDesc(String interfaceDesc) {
+        this.interfaceDesc = interfaceDesc;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public LocalDateTime getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDateTime date) {
+        this.date = date;
+    }
+
+    public List<ApiInterface> getApiInterface() {
+        return apiInterface;
+    }
+
+    public void setApiInterface(List<ApiInterface> apiInterface) {
+        this.apiInterface = apiInterface;
+    }
 }

@@ -52,6 +52,7 @@ public class FileUtil {
                List<JavaAnnotation> annotations = javaClass.getAnnotations();
                for (JavaAnnotation javaAnnotation:annotations){
                    String annotatianName  = javaAnnotation.getType().getCanonicalName();
+                   annotatianName = StringUtil.getClassNameForFullName(annotatianName);
                    if (isControlAnnotation(annotatianName)){
                        classs.add(javaClass);
                        break;

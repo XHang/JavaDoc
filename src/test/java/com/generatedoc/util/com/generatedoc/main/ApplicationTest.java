@@ -13,7 +13,7 @@ public class ApplicationTest {
 
     @Test
     public void getJavaFilesByPathTest(){
-        String path = "D:\\gddxit-project\\Dayawan";
+        String path = "D:\\gddxit-project\\新的的\\wwis-meterreading-service\\wwis-install\\src\\main\\java\\com\\gddxit\\wwis\\installreport\\control";
         List<JavaClass>javaClasses =new ArrayList<>();
         List<File> javaFiles = Application.getJavaFilesByPath(path);
         javaFiles.forEach((file)->{
@@ -24,11 +24,14 @@ public class ApplicationTest {
             if ("BudgetControl.java".equals(file.getName())){
                 System.out.println("catch it");
             }
-
             FileUtil.getControlClass(file,javaClasses);
             return ;
         });
-        javaClasses.forEach((javaClass -> System.out.println("取出来的控制器类名是"+javaClass.getName())));
-
+        javaClasses.forEach((javaClass -> {
+            System.out.println("取出来的控制器类名是" + javaClass.getName());
+            System.out.println("类的注释是:"+javaClass.getComment());
+            return;
+        }
+        ));
     }
 }
