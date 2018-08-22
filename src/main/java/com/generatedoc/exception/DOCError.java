@@ -11,5 +11,9 @@ public class DOCError extends RuntimeException {
         super(errorMsg);
         logger.error(errorMsg);
     }
+    public DOCError(String errorMsg,Exception exception){
+        super(errorMsg,exception);
+        logger.error(errorMsg,exception);
+    }
 
 }

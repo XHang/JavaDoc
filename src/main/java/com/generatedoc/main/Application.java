@@ -1,11 +1,14 @@
 package com.generatedoc.main;
 
 import com.generatedoc.entity.APIDocument;
+import com.generatedoc.entity.ApiInterface;
+import com.generatedoc.exception.DOCError;
 import com.generatedoc.template.JavaFileFilter;
 import com.generatedoc.util.FileUtil;
 import com.generatedoc.util.IOUtil;
 import com.sun.org.apache.xalan.internal.xsltc.runtime.Operators;
 import com.thoughtworks.qdox.model.JavaClass;
+import com.thoughtworks.qdox.model.JavaMethod;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
@@ -13,7 +16,7 @@ import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
+import java.io.*;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -63,18 +66,31 @@ public class Application {
        return apiDocuments;
    }
 
+    /**
+     * 根据JavaClass，生成api文档
+     * @param javaClass
+     * @return
+     */
    private static  APIDocument generationApiDocment(JavaClass javaClass){
        APIDocument document = new APIDocument();
        document.setAuthor(Optional.ofNullable(javaClass.getTagByName("author").getValue()).orElse("管理员"));
        document.setDate(LocalDateTime.now());
        document.setDocumentName(Optional.ofNullable(javaClass.getTagByName("Title").getValue()).orElse(javaClass.getComment()));
        document.setInterfaceDesc(Optional.ofNullable(javaClass.getComment()).orElse("无描述，请充分发挥你的想象力"));
-       return null;
+       return document;
    }
 
-   private void assembleInterface(){
+    /**
+     * 根据方法信息，组装接口文档
+     * @param method 方法内容
+     * @return  ApiInterface 接口文档实体
+     */
+   private ApiInterface assembleInterfaceDoc(JavaMethod method){
+       ApiInterface apiInterface = new ApiInterface();
+       return apiInterface;
 
    }
+
 
     /**
      * 生成接口文档
@@ -84,4 +100,15 @@ public class Application {
    public static void saveDoc(String descPath,List<APIDocument> list){
 
    }
+    public static void saveDoc(String descPath,APIDocument apiDocument){
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(descPath));
+
+        } catch (Exception e) {
+           throw new DOCError("保存接口文档时发生异常",e);
+
+        }finally {
+
+        }
+    }
 }
