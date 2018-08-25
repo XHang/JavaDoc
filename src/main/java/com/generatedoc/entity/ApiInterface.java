@@ -52,6 +52,83 @@ public class ApiInterface {
     private LocalDateTime time;
 
 
+    public RequestType getRequestType() {
+        return requestType;
+    }
 
+    public void setRequestType(RequestType requestType) {
+        this.requestType = requestType;
+    }
 
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public List<ParameterDesc> getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(List<ParameterDesc> parameters) {
+        this.parameters = parameters;
+    }
+
+    public String getParameterExample() {
+        return parameterExample;
+    }
+
+    public void setParameterExample(String parameterExample) {
+        this.parameterExample = parameterExample;
+    }
+
+    public String getReturnType() {
+        return returnType;
+    }
+
+    public void setReturnType(String returnType) {
+        this.returnType = returnType;
+    }
+
+    public List<ReturnFieldDesc> getReturnFieldDesc() {
+        return returnFieldDesc;
+    }
+
+    public void setReturnFieldDesc(List<ReturnFieldDesc> returnFieldDesc) {
+        this.returnFieldDesc = returnFieldDesc;
+    }
+
+    public String getReturnExample() {
+        return returnExample;
+    }
+
+    public void setReturnExample(String returnExample) {
+        this.returnExample = returnExample;
+    }
+
+    public String getDesc() {
+        return desc;
+    }
+
+    public void setDesc(String desc) {
+        this.desc = desc;
+    }
+
+    public LocalDateTime getTime() {
+        return time;
+    }
+
+    public void setTime(LocalDateTime time) {
+        this.time = time;
+    }
 }

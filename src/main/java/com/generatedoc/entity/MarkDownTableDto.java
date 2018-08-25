@@ -7,4 +7,25 @@ import java.util.List;
  */
 public class MarkDownTableDto {
 
+    //标题
+    private List<String> columns ;
+
+    //表格的数据，外层的list是row，里层的list是column
+    private List<List> data;
+
+    public List<String> getColumns() {
+        return columns;
+    }
+
+    public void setColumns(List<String> columns) {
+        this.columns = columns;
+    }
+
+    public List<List> getData() {
+        return data;
+    }
+
+    public void setData(List<List> data) {
+        this.data = data;
+    }
 }
