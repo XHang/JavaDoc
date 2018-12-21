@@ -11,7 +11,7 @@ public class MarkDownTableDto {
     private List<String> columns ;
 
     //表格的数据，外层的list是row，里层的list是column
-    private List<List> data;
+    private List<List<String>> data;
 
     public List<String> getColumns() {
         return columns;
@@ -21,11 +21,11 @@ public class MarkDownTableDto {
         this.columns = columns;
     }
 
-    public List<List> getData() {
+    public List<List<String>> getData() {
         return data;
     }
 
-    public void setData(List<List> data) {
+    public void setData(List<List<String>> data) {
         this.data = data;
     }
 }

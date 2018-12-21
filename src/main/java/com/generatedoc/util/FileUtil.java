@@ -33,20 +33,22 @@ public class FileUtil {
     }
 
     /**
-     * 得到控制器类文件
-     * 如果java文件里面包含控制器类，则它会包含进classs里面。
+     * 得到对外接口类，如控制器类文件
+     * 如果java文件里面包含对外接口类，则它会包含进classs里面。
      * 如果没有，则不包含
      * @param javaFile java为文件
-     * @param classs 存放控制器类的集合
+     * @param classs 存放对外接口类的集合
      */
     public static void  getControlClass(File javaFile,List<JavaClass> classs){
         try {
             JavaProjectBuilder javaProjectBuilder = new JavaProjectBuilder();
+            //将该文件进行Java语法树分析，得到Java文件解析对象
             JavaSource source = javaProjectBuilder.addSource(javaFile);
             if (source == null){
                 logger.info("这个java文件【"+javaFile.getName()+"]】没有有效的类，跳过解析");
                 return ;
             }
+
             List<JavaClass> clazzs =  source.getClasses();
            for (JavaClass javaClass:clazzs){
                List<JavaAnnotation> annotations = javaClass.getAnnotations();

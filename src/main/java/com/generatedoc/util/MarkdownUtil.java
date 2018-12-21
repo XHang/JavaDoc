@@ -147,7 +147,7 @@ public class MarkdownUtil {
         }
         stringBuilder.append("|");
         stringBuilder.append(System.lineSeparator());
-        List<List> datas = dto.getData();
+        List<List<String>> datas = dto.getData();
         datas.forEach(list -> {
             list.forEach(data -> {
                 stringBuilder.append("|  "+data+"  ");
@@ -156,7 +156,12 @@ public class MarkdownUtil {
             stringBuilder.append(System.lineSeparator());
         });
         return stringBuilder.toString();
+    }
 
+
+    public static String buildText(String string){
+
+        return string;
     }
 
 

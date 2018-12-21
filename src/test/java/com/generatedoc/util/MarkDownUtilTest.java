@@ -1,6 +1,5 @@
 package com.generatedoc.util;
 
-import com.alibaba.fastjson.JSON;
 import com.generatedoc.emnu.RequestType;
 import com.generatedoc.entity.ApiInterface;
 import com.generatedoc.entity.MarkDownTableDto;
@@ -52,7 +51,7 @@ public class MarkDownUtilTest {
         apiInterface.setDesc("json代码测试");
         apiInterface.setRequestType(RequestType.GET);
         apiInterface.setTime(LocalDateTime.now());
-        String json  =  JSON.toJSONString(apiInterface);
+        String json  =  JSONUtil.toJSONString(apiInterface);
         String formatJson = JsonUtil.jsonFormat(json);
         String code = MarkdownUtil.buildCodeArea(formatJson,"json");
         sb.append(code);

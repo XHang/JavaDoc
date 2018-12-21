@@ -3,18 +3,18 @@ package com.generatedoc.main;
 import com.generatedoc.entity.APIDocument;
 import com.generatedoc.entity.ApiInterface;
 import com.generatedoc.exception.DOCError;
+import com.generatedoc.service.DocmentsService;
 import com.generatedoc.template.JavaFileFilter;
 import com.generatedoc.util.FileUtil;
 import com.generatedoc.util.IOUtil;
-import com.sun.org.apache.xalan.internal.xsltc.runtime.Operators;
 import com.thoughtworks.qdox.model.JavaClass;
 import com.thoughtworks.qdox.model.JavaMethod;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.time.LocalDateTime;
@@ -25,7 +25,8 @@ import java.util.*;
  */
 public class Application {
 
-    private static Logger logger = LogManager.getLogger(Application.class);
+ public static final Logger log = LoggerFactory.getLogger(Application.class);
+    private static DocmentsService docmentsService;
 
     public static void main (String[] args){
         System.out.println("请输入文件夹路径");
@@ -60,8 +61,10 @@ public class Application {
      */
    public static  List<APIDocument> generateDoc(List<File> files){
       List<JavaClass> javaClasses = new ArrayList<>();
+      //将文件集合里面的对外接口类抽取出来，填充到javaClasses里面
       files.forEach(file -> FileUtil.getControlClass(file,javaClasses));
       List<APIDocument> apiDocuments = new ArrayList<>();
+      //将对外接口类转成接口文档对象
        javaClasses.forEach((javaClass -> apiDocuments.add(generationApiDocment(javaClass))));
        return apiDocuments;
    }
@@ -75,10 +78,48 @@ public class Application {
        APIDocument document = new APIDocument();
        document.setAuthor(Optional.ofNullable(javaClass.getTagByName("author").getValue()).orElse("管理员"));
        document.setDate(LocalDateTime.now());
+       //取类的注解@Title作为接口文档标题，如有没有的话，取类的注解作为标题
        document.setDocumentName(Optional.ofNullable(javaClass.getTagByName("Title").getValue()).orElse(javaClass.getComment()));
+       //取类的注解作为接口文档描述
        document.setInterfaceDesc(Optional.ofNullable(javaClass.getComment()).orElse("无描述，请充分发挥你的想象力"));
+       List<JavaMethod> interfaceMethod = getInterfaceMethod(javaClass);
+       List<ApiInterface> interfaces = interfaceMethod2Doc(interfaceMethod);
+       document.setApiInterface(interfaces);
        return document;
    }
+
+   //将接口方法转成接口文档数据
+    private static List<ApiInterface> interfaceMethod2Doc(List<JavaMethod> interfaceMethod) {
+       //TODO 未完成
+        return null;
+    }
+
+    private static List<JavaMethod> getInterfaceMethod(JavaClass javaClass) {
+        List<JavaMethod> interfaceMethods = new ArrayList<>();
+       List<JavaMethod> methods = javaClass.getMethods();
+       if (CollectionUtils.isEmpty(methods)){
+           log.warn("该接口类{}无方法可用",javaClass.getName());
+           return new ArrayList<>();
+       }
+       methods.forEach(method -> {
+           if (isInterfactMethod(method)){
+               interfaceMethods.add(method);
+           }
+       });
+
+
+        return interfaceMethods;
+    }
+
+    /**
+     * 是否是对外接口的方法
+     * @param method
+     * @return
+     */
+    private static boolean isInterfactMethod(JavaMethod method) {
+        //TODO
+        return true;
+    }
 
     /**
      * 根据方法信息，组装接口文档
@@ -98,17 +139,12 @@ public class Application {
      * @param list 接口文档实体类列表
      */
    public static void saveDoc(String descPath,List<APIDocument> list){
-
-   }
-    public static void saveDoc(String descPath,APIDocument apiDocument){
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(descPath));
-
-        } catch (Exception e) {
-           throw new DOCError("保存接口文档时发生异常",e);
-
-        }finally {
-
+        if (CollectionUtils.isEmpty(list)){
+            log.warn("本次运行无生成任何接口文档");
+            return;
         }
-    }
+        list.forEach(apiDocument -> {
+           docmentsService.saveDoc(apiDocument,descPath);
+        });
+   }
 }

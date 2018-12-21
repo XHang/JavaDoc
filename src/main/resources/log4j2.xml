@@ -12,7 +12,7 @@
 			</PatternLayout>
 		</Console>
 		<!--DEBUG -->
-		<RollingFile name="RollingFileDebug" fileName="${FilePath}info.log"
+		<RollingFile name="" fileName="${FilePath}info.log"
 			filePattern="${FilePath}debug-%d{yyyy-MM-dd}.log" append="true">
 			<ThresholdFilter level="debug" onMatch="ACCEPT"
 				onMismatch="DENY" />
