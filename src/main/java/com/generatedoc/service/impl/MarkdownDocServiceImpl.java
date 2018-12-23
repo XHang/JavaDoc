@@ -4,24 +4,19 @@ import com.generatedoc.constant.MappingConstant;
 import com.generatedoc.entity.APIDocument;
 import com.generatedoc.entity.ApiInterface;
 import com.generatedoc.service.DocmentsService;
-import com.generatedoc.service.MarkDownMethodService;
+import com.generatedoc.service.MarkDownDocMethodService;
 import com.generatedoc.util.IOUtil;
 import com.generatedoc.util.MarkdownUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.misc.IOUtils;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.util.List;
 
 public class MarkdownDocServiceImpl implements DocmentsService {
     public static final Logger log = LoggerFactory.getLogger(DocmentsService.class);
     public static final String suffixName  ="md";
-    private MarkDownMethodService methodService;
+    private MarkDownDocMethodService methodService;
 
 
     @Override

@@ -2,8 +2,8 @@ package com.generatedoc.main;
 
 import com.generatedoc.entity.APIDocument;
 import com.generatedoc.entity.ApiInterface;
-import com.generatedoc.exception.DOCError;
 import com.generatedoc.service.DocmentsService;
+import com.generatedoc.service.MethodService;
 import com.generatedoc.template.JavaFileFilter;
 import com.generatedoc.util.FileUtil;
 import com.generatedoc.util.IOUtil;
@@ -11,7 +11,6 @@ import com.thoughtworks.qdox.model.JavaClass;
 import com.thoughtworks.qdox.model.JavaMethod;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +26,7 @@ public class Application {
 
  public static final Logger log = LoggerFactory.getLogger(Application.class);
     private static DocmentsService docmentsService;
+    private static MethodService methodService;
 
     public static void main (String[] args){
         System.out.println("请输入文件夹路径");
@@ -83,14 +83,14 @@ public class Application {
        //取类的注解作为接口文档描述
        document.setInterfaceDesc(Optional.ofNullable(javaClass.getComment()).orElse("无描述，请充分发挥你的想象力"));
        List<JavaMethod> interfaceMethod = getInterfaceMethod(javaClass);
-       List<ApiInterface> interfaces = interfaceMethod2Doc(interfaceMethod);
+       List<ApiInterface> interfaces  = methodService.methodsToDoc(interfaceMethod);
        document.setApiInterface(interfaces);
        return document;
    }
 
    //将接口方法转成接口文档数据
     private static List<ApiInterface> interfaceMethod2Doc(List<JavaMethod> interfaceMethod) {
-       //TODO 未完成
+
         return null;
     }
 
@@ -118,7 +118,7 @@ public class Application {
      */
     private static boolean isInterfactMethod(JavaMethod method) {
         //TODO
-        return true;
+        return false;
     }
 
     /**

@@ -2,6 +2,6 @@ package com.generatedoc.service;
 
 import com.generatedoc.entity.ApiInterface;
 
-public interface MarkDownMethodService {
+public interface MarkDownDocMethodService {
     void buildMethodDoc(ApiInterface apiInterface, StringBuilder sb, int index);
 }
