@@ -1,6 +1,9 @@
 package com.generatedoc.emnu;
 
 public enum RequestType {
-    GET,POST;
-    //TODO 待补充
+    GET,
+    POST,
+    DELETE,
+    PATCH,
+    UNKNOWN
 }

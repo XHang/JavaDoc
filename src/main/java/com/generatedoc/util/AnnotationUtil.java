@@ -28,10 +28,25 @@ public class AnnotationUtil {
             return null;
         }
         for (JavaAnnotation annotation : annotations) {
-            if(annotationName.equals(annotation.getType().getName())){
+            String actualName = getSimpleClassName(annotation.getType().getName());
+            if(annotationName.equals(actualName)){
                 return annotation;
             }
         }
         return null;
+    }
+    public static String getSimpleClassName(String className){
+        return getLastStrWithoutDot(className);
+    }
+    public static String getLastStrWithoutDot(String className){
+        if (StringUtil.isEmpty(className)){
+            return "";
+        }
+        int index =  className.lastIndexOf(".");
+        if (index == -1){
+            return className;
+        }
+        String result =  className.substring(index+1,className.length());
+        return result;
     }
 }

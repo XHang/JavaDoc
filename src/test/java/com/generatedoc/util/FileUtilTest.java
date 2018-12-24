@@ -7,7 +7,7 @@ import java.io.File;
 
 public class FileUtilTest {
 
-    @Test
+    //@Test
     public void isJavaFileTest(){
         String filepath = "D:\\gddxit-project\\Dayawan\\wwis-service\\wwis-core\\src\\main\\java\\com\\gddxit\\wwis\\core\\common\\beans\\CustomArrayEditor.java";
         System.out.println(FileUtil.isJavaFile(new File(filepath)));

@@ -12,7 +12,7 @@
 			</PatternLayout>
 		</Console>
 		<!--DEBUG -->
-		<RollingFile name="" fileName="${FilePath}info.log"
+		<RollingFile name="docLog" fileName="${FilePath}info.log"
 			filePattern="${FilePath}debug-%d{yyyy-MM-dd}.log" append="true">
 			<ThresholdFilter level="debug" onMatch="ACCEPT"
 				onMismatch="DENY" />
@@ -25,7 +25,7 @@
 	</Appenders>
 	<Loggers>
 		<!--业务日志级别为debug -->
-		<Logger level="debug" name="com.generatedoc" additivity="true">
+		<Logger level="debug" name="com.generatedoc" additivity="false">
 			<appender-ref ref="RollingFileDebug" />
 			<appender-ref ref="Console" />
 		</Logger>

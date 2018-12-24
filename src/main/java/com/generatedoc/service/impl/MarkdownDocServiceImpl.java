@@ -10,12 +10,15 @@ import com.generatedoc.util.MarkdownUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
-
+@Service
 public class MarkdownDocServiceImpl implements DocmentsService {
     public static final Logger log = LoggerFactory.getLogger(DocmentsService.class);
     public static final String suffixName  ="md";
+    @Autowired
     private MarkDownDocMethodService methodService;
 
 
@@ -30,7 +33,7 @@ public class MarkdownDocServiceImpl implements DocmentsService {
     private String buildFilePath(String descPath, APIDocument apiDocument) {
         log.debug("接口文档的保存目录是【{}】",descPath);
         //后缀名可自定义
-        String path = descPath+apiDocument.getDocumentName()+"接口文档."+suffixName;
+        String path = descPath+"/"+apiDocument.getDocumentName()+"接口文档."+suffixName;
         return path;
     }
 

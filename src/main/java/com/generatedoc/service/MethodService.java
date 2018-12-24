@@ -9,4 +9,6 @@ public interface MethodService {
     public ApiInterface methodToDoc(JavaMethod javaMethod);
 
     List<ApiInterface> methodsToDoc(List<JavaMethod> interfaceMethod);
+
+    boolean isInterfactMethod(JavaMethod method);
 }

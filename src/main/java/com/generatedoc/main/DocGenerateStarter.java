@@ -1,12 +1,17 @@
 package com.generatedoc.main;
 
+import com.generatedoc.constant.SpringMVCConstant;
 import com.generatedoc.entity.APIDocument;
 import com.generatedoc.entity.ApiInterface;
+import com.generatedoc.filter.JavaFileFilter;
 import com.generatedoc.service.DocmentsService;
 import com.generatedoc.service.MethodService;
-import com.generatedoc.template.JavaFileFilter;
+import com.generatedoc.util.AnnotationUtil;
 import com.generatedoc.util.FileUtil;
 import com.generatedoc.util.IOUtil;
+import com.generatedoc.util.StringUtil;
+import com.thoughtworks.qdox.model.DocletTag;
+import com.thoughtworks.qdox.model.JavaAnnotation;
 import com.thoughtworks.qdox.model.JavaClass;
 import com.thoughtworks.qdox.model.JavaMethod;
 import org.apache.commons.collections4.CollectionUtils;
@@ -14,6 +19,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.*;
 import java.time.LocalDateTime;
@@ -22,19 +29,25 @@ import java.util.*;
 /**
  * @author
  */
-public class Application {
+@Component
+public class DocGenerateStarter {
 
- public static final Logger log = LoggerFactory.getLogger(Application.class);
-    private static DocmentsService docmentsService;
-    private static MethodService methodService;
+ public  final Logger log = LoggerFactory.getLogger(DocGenerateStarter.class);
+    @Autowired
+    private  DocmentsService docmentsService;
+    @Autowired
+    private  MethodService methodService;
 
-    public static void main (String[] args){
-        System.out.println("请输入文件夹路径");
+    public  void run (){
+    /*    System.out.println("请输入文件夹路径");
         String path = IOUtil.getInput();
         System.out.println("请输入生成接口文件的路径");
-        String targetpath = IOUtil.getInput();
+        String targetpath = IOUtil.getInput();*/
+    String path = "D:\\gddxit-project\\kunming-marketing-service\\wwis-flowapplication";
+    
         List<File> files = getJavaFilesByPath(path);
         List<APIDocument> documents = generateDoc(files);
+        String targetpath = "E:\\工作目录\\昆明\\接口文档\\setting接口文档生成";
         saveDoc(targetpath,documents);
 
     }
@@ -46,7 +59,7 @@ public class Application {
      * @param path 路径
      * @return java文件列表
      */
-   public  static List<File> getJavaFilesByPath(String path){
+   public   List<File> getJavaFilesByPath(String path){
 
         Collection<File> files = FileUtils.listFiles(new File(path),new JavaFileFilter(),TrueFileFilter.TRUE);
         return new ArrayList<>(files);
@@ -59,7 +72,7 @@ public class Application {
      * @param files java文件列表
      * @return 接口文档的实体类
      */
-   public static  List<APIDocument> generateDoc(List<File> files){
+   public   List<APIDocument> generateDoc(List<File> files){
       List<JavaClass> javaClasses = new ArrayList<>();
       //将文件集合里面的对外接口类抽取出来，填充到javaClasses里面
       files.forEach(file -> FileUtil.getControlClass(file,javaClasses));
@@ -74,12 +87,13 @@ public class Application {
      * @param javaClass
      * @return
      */
-   private static  APIDocument generationApiDocment(JavaClass javaClass){
+   private   APIDocument generationApiDocment(JavaClass javaClass){
+       log.debug("开始生成类{}的接口文档",javaClass.getName());
        APIDocument document = new APIDocument();
-       document.setAuthor(Optional.ofNullable(javaClass.getTagByName("author").getValue()).orElse("管理员"));
+       document.setAuthor(buildAuthor(javaClass));
        document.setDate(LocalDateTime.now());
        //取类的注解@Title作为接口文档标题，如有没有的话，取类的注解作为标题
-       document.setDocumentName(Optional.ofNullable(javaClass.getTagByName("Title").getValue()).orElse(javaClass.getComment()));
+       document.setDocumentName(buildTitle(javaClass));
        //取类的注解作为接口文档描述
        document.setInterfaceDesc(Optional.ofNullable(javaClass.getComment()).orElse("无描述，请充分发挥你的想象力"));
        List<JavaMethod> interfaceMethod = getInterfaceMethod(javaClass);
@@ -88,13 +102,40 @@ public class Application {
        return document;
    }
 
-   //将接口方法转成接口文档数据
-    private static List<ApiInterface> interfaceMethod2Doc(List<JavaMethod> interfaceMethod) {
+    private String buildTitle(JavaClass javaClass) {
+        DocletTag docletTag  = javaClass.getTagByName("Title");
+        String title = "";
+        if (docletTag == null){
+            log.info("找不到该类{}的Title注释信息",javaClass.getName());
+            title =  javaClass.getComment();
+        }else{
+            title =  docletTag.getValue();
+        }
+        if (StringUtil.isEmpty(title)){
+            log.warn("类名{}找不到有效的接口文档描述，取类名为接口文档名");
+            title = javaClass.getName();
+        }
+        return title;
+    }
+
+    private String buildAuthor(JavaClass javaClass) {
+        DocletTag docletTag = javaClass.getTagByName("author");
+        if (docletTag == null){
+            log.info("找不到该类{}的作者注释信息",javaClass.getName());
+            return "";
+        }
+        String author = docletTag.getValue();
+        log.info("该类{}的author注释是{}",javaClass.getName(),author);
+        return author;
+    }
+
+    //将接口方法转成接口文档数据
+    private  List<ApiInterface> interfaceMethod2Doc(List<JavaMethod> interfaceMethod) {
 
         return null;
     }
 
-    private static List<JavaMethod> getInterfaceMethod(JavaClass javaClass) {
+    private  List<JavaMethod> getInterfaceMethod(JavaClass javaClass) {
         List<JavaMethod> interfaceMethods = new ArrayList<>();
        List<JavaMethod> methods = javaClass.getMethods();
        if (CollectionUtils.isEmpty(methods)){
@@ -102,7 +143,7 @@ public class Application {
            return new ArrayList<>();
        }
        methods.forEach(method -> {
-           if (isInterfactMethod(method)){
+           if (methodService.isInterfactMethod(method)){
                interfaceMethods.add(method);
            }
        });
@@ -111,15 +152,7 @@ public class Application {
         return interfaceMethods;
     }
 
-    /**
-     * 是否是对外接口的方法
-     * @param method
-     * @return
-     */
-    private static boolean isInterfactMethod(JavaMethod method) {
-        //TODO
-        return false;
-    }
+
 
     /**
      * 根据方法信息，组装接口文档
@@ -138,7 +171,7 @@ public class Application {
      * @param descPath 目的文件夹
      * @param list 接口文档实体类列表
      */
-   public static void saveDoc(String descPath,List<APIDocument> list){
+   public  void saveDoc(String descPath,List<APIDocument> list){
         if (CollectionUtils.isEmpty(list)){
             log.warn("本次运行无生成任何接口文档");
             return;

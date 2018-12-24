@@ -21,7 +21,6 @@ public class StringUtil {
      * @return 类的简称，例如AC
      */
     public static String getClassNameForFullName(String fullName){
-        logger.trace("接受到的类的完全限定名为：【"+fullName+"】");
         if (isEmpty(fullName)){
             return fullName;
         }
@@ -36,5 +35,12 @@ public class StringUtil {
         }else{
             return matcher.group();
         }
+    }
+
+    public static String removeBothSideChar(String src){
+        if (StringUtil.isEmpty(src)){
+            return "";
+        }
+        return src.substring(1,src.length()-1);
     }
 }

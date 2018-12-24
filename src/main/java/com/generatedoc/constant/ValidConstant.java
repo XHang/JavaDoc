@@ -1,5 +1,8 @@
 package com.generatedoc.constant;
 
+/**
+ * 校验框架的相关名词
+ */
 public interface ValidConstant {
     public static final String MAX_LIMIT = "Max";
     public static final String MIN_LIMIT = "Min";

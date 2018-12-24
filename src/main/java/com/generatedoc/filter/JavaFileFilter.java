@@ -1,6 +1,5 @@
-package com.generatedoc.template;
+package com.generatedoc.filter;
 
-import com.generatedoc.main.Application;
 import com.generatedoc.util.FileUtil;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.logging.log4j.LogManager;
@@ -14,7 +13,7 @@ public class JavaFileFilter implements IOFileFilter {
     @Override
     public boolean accept(File file) {
         String filName = file.getName();
-        logger.info("已扫描文件："+filName);
+        logger.debug("已扫描文件或文件夹："+filName);
         return FileUtil.isJavaFile(file);
     }
 

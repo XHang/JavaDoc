@@ -41,6 +41,7 @@ public class FileUtil {
      */
     public static void  getControlClass(File javaFile,List<JavaClass> classs){
         try {
+            logger.debug("判断Java文件【{}】里面的类是否是控制器类",javaFile.getName());
             JavaProjectBuilder javaProjectBuilder = new JavaProjectBuilder();
             //将该文件进行Java语法树分析，得到Java文件解析对象
             JavaSource source = javaProjectBuilder.addSource(javaFile);
@@ -51,11 +52,15 @@ public class FileUtil {
 
             List<JavaClass> clazzs =  source.getClasses();
            for (JavaClass javaClass:clazzs){
+               logger.debug("开始遍历该文件的【{}】类",javaClass.getName());
                List<JavaAnnotation> annotations = javaClass.getAnnotations();
                for (JavaAnnotation javaAnnotation:annotations){
+
                    String annotatianName  = javaAnnotation.getType().getCanonicalName();
+                   logger.debug("开始遍历该类【{}】的【{}】注解",javaClass.getName(),annotatianName);
                    annotatianName = StringUtil.getClassNameForFullName(annotatianName);
                    if (isControlAnnotation(annotatianName)){
+                       logger.info("该类【{}】的注解【{}】是控制器注解",javaClass.getName(),annotatianName);
                        classs.add(javaClass);
                        break;
                    }

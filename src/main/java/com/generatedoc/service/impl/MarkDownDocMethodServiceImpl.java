@@ -9,11 +9,13 @@ import com.generatedoc.service.MarkDownDocMethodService;
 import com.generatedoc.util.DateUitl;
 import com.generatedoc.util.MarkdownUtil;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class MarkDownDocMethodServiceImpl implements MarkDownDocMethodService {
     @Override
     public void buildMethodDoc(ApiInterface apiInterface, StringBuilder sb, int index) {
@@ -21,7 +23,7 @@ public class MarkDownDocMethodServiceImpl implements MarkDownDocMethodService {
         sb.append(MarkdownUtil.buildSingleOrderItem(1,"编写人员："+apiInterface.getAuthor()));
         sb.append(MarkdownUtil.buildSingleOrderItem(2,"功能: "+apiInterface.getDesc()));
         sb.append(MarkdownUtil.buildSingleOrderItem(3,"调用方式: "+apiInterface.getRequestType()));
-        sb.append(MarkdownUtil.buildSingleOrderItem(4,"调用URL: "+apiInterface.getUrl()));
+        sb.append(MarkdownUtil.buildSingleOrderItem(4,"调用URL: "+MarkdownUtil.buildCodeLine(apiInterface.getUrl())));
         buildRequestArea(sb,apiInterface);
         buildResponseArea(sb,apiInterface);
         sb.append(MarkdownUtil.buildSingleOrderItem(7,"修订日期 "));
@@ -37,6 +39,7 @@ public class MarkDownDocMethodServiceImpl implements MarkDownDocMethodService {
 
     private void buildResponseExample(StringBuilder sb, ApiInterface apiInterface) {
         sb.append(MarkdownUtil.buildText("**响应示例**"));
+        sb.append(MarkdownUtil.buildText("暂无"));
         //TODO 未完成
     }
 
@@ -44,6 +47,7 @@ public class MarkDownDocMethodServiceImpl implements MarkDownDocMethodService {
         List<ReturnFieldDesc> returnFieldDescs = apiInterface.getReturnFieldDesc();
         if (CollectionUtils.isEmpty(returnFieldDescs)){
             sb.append(MarkdownUtil.buildText("无"));
+            return;
         }
         List<String> column = new ArrayList<>();
         column.add("字段名");
@@ -54,9 +58,9 @@ public class MarkDownDocMethodServiceImpl implements MarkDownDocMethodService {
         List<List<String>> data = new ArrayList<>();
         for (ReturnFieldDesc returnFieldDesc : returnFieldDescs) {
             List<String> row = new ArrayList<>();
-            row.add(returnFieldDesc.getFieldName());
-            row.add(returnFieldDesc.getFieldDesc());
-            row.add(returnFieldDesc.getFieldType().getName());
+            row.add(returnFieldDesc.getParameterName());
+            row.add(returnFieldDesc.getParameterDesc());
+            row.add(returnFieldDesc.getDataType().getName());
             data.add(row);
         }
         dto.setData(data);
@@ -64,7 +68,8 @@ public class MarkDownDocMethodServiceImpl implements MarkDownDocMethodService {
     }
 
     private void buildRequestExample(StringBuilder sb, ApiInterface apiInterface) {
-        sb.append(MarkdownUtil.buildText("*调用示例*"));
+        sb.append(MarkdownUtil.buildText("**调用示例**"));
+        sb.append(MarkdownUtil.buildText("暂无"));
         //TODO 暂缓开发
     }
 
@@ -90,7 +95,7 @@ public class MarkDownDocMethodServiceImpl implements MarkDownDocMethodService {
         column.add("参数名");
         column.add("参数解释");
         column.add("参数类型");
-        column.add("是否必传");
+        column.add("限制规则");
         column.add("默认值");
         List<List<String>> data = new ArrayList<>();
         for (ParameterDesc desc : list) {
@@ -98,7 +103,7 @@ public class MarkDownDocMethodServiceImpl implements MarkDownDocMethodService {
             row.add(desc.getParameterName());
             row.add(desc.getParameterDesc());
             row.add(desc.getDataType().getName());
-            row.add(desc.getRequired().getName());
+            row.add("");
             row.add(desc.getDefaultValue());
             data.add(row);
         }

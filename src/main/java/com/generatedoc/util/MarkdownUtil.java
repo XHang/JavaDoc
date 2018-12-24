@@ -160,8 +160,11 @@ public class MarkdownUtil {
 
 
     public static String buildText(String string){
+        return string+System.lineSeparator();
+    }
 
-        return string;
+    public static String buildCodeLine(String code){
+       return "`"+code+"`"+System.lineSeparator();
     }
 
 

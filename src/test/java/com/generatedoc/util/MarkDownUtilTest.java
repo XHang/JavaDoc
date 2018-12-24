@@ -16,7 +16,7 @@ import java.util.List;
 public class MarkDownUtilTest {
 
 
-    @Test
+    //@Test
     public void buildMarkDownFile(){
         StringBuilder sb = new StringBuilder();
         sb.append(MarkdownUtil.buildTitle(1,"测试接口文档"));
@@ -37,7 +37,7 @@ public class MarkDownUtilTest {
         List<String> data2 = Arrays.asList("field2","字段2","否","无");
         List<String> data3 = Arrays.asList("field3","字段4","否","无");
         List<String> data4 = Arrays.asList("field4","字段4","否","4");
-        List<List> data = Arrays.asList(data1,data2,data3,data4);
+        List<List<String>> data = Arrays.asList(data1,data2,data3,data4);
         MarkDownTableDto dto = new MarkDownTableDto();
         dto.setColumns(column);
         dto.setData(data);

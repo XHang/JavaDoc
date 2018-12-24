@@ -1,10 +1,8 @@
 package com.generatedoc.util;
 
 import com.generatedoc.exception.DOCError;
-import com.generatedoc.main.Application;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import sun.rmi.runtime.Log;
 
 import java.io.*;
 
