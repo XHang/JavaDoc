@@ -20,10 +20,37 @@ public class MappingConstant {
         NUMBER_MAP.put("9","九");
         NUMBER_MAP.put("10","十");
     }
-    public static String numberConverter(int index){
-        if (index>10){
-            throw new SystemException("该方法暂不支持十以上的数字-汉字转换");
+    public static final Map<String,String> BIT_WORK = new HashMap<>();
+    static{
+        BIT_WORK.put("1","个");
+        BIT_WORK.put("2","十");
+        BIT_WORK.put("3","百");
+        BIT_WORK.put("4","千");
+    }
+
+    /**
+     * 先定个小目标，比如说，先转换它一个亿
+     * @param number
+     * @return
+     */
+    public static String numberConverter(int number){
+        char [] bit = (number+"").toCharArray();
+        if (bit.length>4){
+            throw new SystemException("不支持对千位以上的数字进行转换");
         }
-        return NUMBER_MAP.get(index+"");
+        StringBuilder sb = new StringBuilder();
+        int bitIndex = 1;
+        for (int index = bit.length-1;index>=0;index--){
+            String bitValue = bit[index]+"";
+            if (bitIndex == 1){
+                sb.append(NUMBER_MAP.get(bitValue));
+            }
+            else{
+                StringBuilder stringBuilder = new StringBuilder(BIT_WORK.get(bitIndex+""));
+                sb.append(stringBuilder.reverse()+NUMBER_MAP.get(bitValue));
+            }
+            bitIndex++;
+        }
+       return sb.reverse().toString();
     }
 }

@@ -8,10 +8,7 @@ import com.generatedoc.exception.DOCError;
 import com.generatedoc.service.ClassService;
 import com.generatedoc.service.ParameterService;
 import com.generatedoc.util.AnnotationUtil;
-import com.thoughtworks.qdox.model.JavaAnnotation;
-import com.thoughtworks.qdox.model.JavaClass;
-import com.thoughtworks.qdox.model.JavaMethod;
-import com.thoughtworks.qdox.model.JavaParameter;
+import com.thoughtworks.qdox.model.*;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
@@ -51,13 +48,22 @@ public class QdoxParameterServiceImpl implements ParameterService {
             }
         }else{
             ParameterDesc desc = new ParameterDesc();
-            desc.setDataType(getDataType(parameter.getJavaClass()));
-            desc.setParameterDesc(javaMethod.getTagByName(parameter.getName()).getName());
+            desc.setDataType(classService.getDataType(parameter.getJavaClass()));
+            desc.setParameterDesc(buildParameterDesc(parameter,javaMethod));
             desc.setParameterName(parameter.getName());
             //TODO  默认值，限制规则排计划
             result.add(desc);
         }
         return result;
+    }
+
+    private String buildParameterDesc(JavaParameter parameter, JavaMethod javaMethod) {
+        DocletTag docletTag = javaMethod.getTagByName(parameter.getName());
+        if (docletTag == null){
+            log.warn("方法{}找不到参数{}的注释",javaMethod.getName(),parameter.getName());
+            return "";
+        }
+        return docletTag.getValue();
     }
 
     /**
@@ -67,20 +73,11 @@ public class QdoxParameterServiceImpl implements ParameterService {
      */
     private boolean isInnerParameter(JavaParameter parameter){
         JavaClass clazz = parameter.getJavaClass();
-        DataType dataType =  getDataType(clazz);
+        DataType dataType =  classService.getDataType(clazz);
         return DataType.OBJECT.equals(dataType);
     }
 
-    private DataType getDataType(JavaClass clazz) {
-        //TODO 肯定会挂
-        DataType[] dataTypes = DataType.values();
-        for (DataType dataType : dataTypes) {
-            if (dataType.name().equals(clazz.getCanonicalName())){
-                return dataType;
-            }
-        }
-        return DataType.OBJECT;
-    }
+
 
 
     private List<ParameterDesc> bodyParameterToDoc(JavaParameter parameter) {
@@ -102,7 +99,7 @@ public class QdoxParameterServiceImpl implements ParameterService {
     public  ParameterDesc converClassFieldDesc(ClassFieldDesc fieldDesc){
         try {
             ParameterDesc parameterDesc = new ParameterDesc();
-            BeanUtils.copyProperties(fieldDesc,parameterDesc);
+            BeanUtils.copyProperties(parameterDesc,fieldDesc);
             return parameterDesc;
         } catch (Exception e) {
             log.error("转换fieldDesc到ParameterDesc失败",e);

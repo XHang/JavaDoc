@@ -21,5 +21,5 @@ public interface ClassService {
      * @param javaClass
      * @return
      */
-    DataType getDataTypeByJavaClass(JavaClass javaClass);
+    DataType getDataType(JavaClass clazz);
 }

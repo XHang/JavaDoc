@@ -2,17 +2,23 @@ package com.generatedoc.service.impl;
 
 import com.generatedoc.constant.JavaConstant;
 import com.generatedoc.constant.ValidConstant;
+import com.generatedoc.context.ClassContext;
 import com.generatedoc.emnu.DataType;
 import com.generatedoc.emnu.RuleType;
 import com.generatedoc.entity.ClassFieldDesc;
 import com.generatedoc.entity.FieldRule;
 import com.generatedoc.service.ClassService;
 import com.generatedoc.util.AnnotationUtil;
+import com.generatedoc.util.StringUtil;
 import com.thoughtworks.qdox.model.*;
+import com.thoughtworks.qdox.model.impl.DefaultJavaParameterizedType;
+import com.thoughtworks.qdox.model.impl.JavaClassParent;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import javax.xml.crypto.Data;
 import java.util.ArrayList;
 import java.util.List;
 @Service
@@ -43,12 +49,13 @@ public class QdoxClassServieImpl implements ClassService {
         //TODO getField和getBeanProperties有何不同呢？
         //TODO Rule的分组需要加
         //TODO 小心json的别名！
+        clazz = getRealClass(clazz);
         List<JavaField> fields =  clazz.getFields();
-        List<ClassFieldDesc> result = new ArrayList<>();
+        //List<ClassFieldDesc> result = new ArrayList<>();
         for (JavaField field : fields) {
             log.debug("开始遍历类{}的字段{}",clazz.getName(),field.getName());
             ClassFieldDesc desc = new ClassFieldDesc();
-            desc.setDataType(getDataTypeByJavaClass(field.getType()));
+            desc.setDataType(getDataType(field.getType()));
             desc.setParameterDesc(getParameterDesc(field,clazz));
             desc.setParameterName(field.getName());
             //如果需要描述字段的限制规则
@@ -57,16 +64,122 @@ public class QdoxClassServieImpl implements ClassService {
                 desc.setFieldRule(rule);
             }
             //如果当前遍历的字段是非基本类型，也就是说，是Bean
-            if (!isBaseType(field.getType())){
+            if (isBean(field.getType())){
                 getJavaClassDesc(field.getType(),container,isLimit,groupName);
+            }
+            JavaClass innerClass = null;
+            if ((innerClass = getCollectionBean(field))!=null){
+                getJavaClassDesc(innerClass,container,isLimit,groupName);
             }
             container.add(desc);
         }
     }
 
+    /**
+     * @param type
+     * @return
+     */
+    private JavaClass getCollectionBean(JavaField field) {
+        JavaClass javaClass = field.getType();
+        if (JavaConstant.LIST_TPYE.equals(field.getType().getName())){
+            DefaultJavaParameterizedType type = (DefaultJavaParameterizedType) javaClass;
+            List<JavaType> types =  type.getActualTypeArguments();
+            if (!CollectionUtils.isEmpty(types)){
+                JavaClass innerType = (JavaClass) types.get(0);
+                if (isBean(innerType)){
+                    return innerType;
+                }
+            }
+        }
+        return null;
+    }
 
+    private JavaClass getRealClass(JavaClass clazz) {
+        String className = clazz.getFullyQualifiedName();
+        JavaClass javaClass = ClassContext.getClass(clazz.getFullyQualifiedName());
 
+        if (javaClass == null){
+            log.info("简单查找类失败，类名是{}",clazz.getFullyQualifiedName());
+            //如果类名已经带逗号，则证明已经是全称，无需再反复查找
+            if (className.indexOf(".")==-1){
+                javaClass = tryGetRealClass(clazz);
+            }
+            if (javaClass == null){
+                log.warn("上下文没有找到类{}，无法生成该类的字段描述",clazz.getName());
+                return clazz;
+            }
+        }
+        return javaClass;
+    }
 
+    /**
+     * 有时候，QODX返回的类名不是全称，这个时候，就要拿到声明它的类的import
+     * 组装全称类名，然后去取JavaClass
+     * @param javaClass
+     * @return
+     */
+   private JavaClass tryGetRealClass(JavaClass javaClass) {
+       String className = javaClass.getFullyQualifiedName();
+       int index = 1;
+       JavaClass result = null;
+       while (true) {
+           String fullName = fillClassName( javaClass, index++);
+           log.info("第{}次反复查找，组装的类名全称是{}", index - 1, fullName);
+           if (StringUtil.isEmpty(fullName)) {
+               log.info("第{}次反复查找，找不到类{}的全称了", index - 1, className);
+               break;
+           }
+           result = ClassContext.getClass(fullName);
+           if (result != null) {
+               log.info("第{}次反复查找，找到类{}的全称{}了", index - 1, className, fullName);
+               break;
+           }
+
+       }
+       return result;
+   }
+
+    /**
+     * 补全类的全程
+     * @param javaClass 该类所属的java类
+     * @param i 击中数，当击中数和调用次数等同，则返回击中的值
+     * @return
+     */
+    private String fillClassName(JavaClass javaClass, int i) {
+        String className = javaClass.getFullyQualifiedName();
+        List<String> imports = javaClass.getParent().getParentSource().getImports();
+        String targerImport = "";
+        int hit = 1;
+        //首次调用该方法时，击中数为1，先用自身包名补全类全称
+       if (hit ==i ){
+           targerImport =  javaClass.getParent().getParentSource().getPackage().getName()+".";
+       }else{
+           hit=2;
+           for (String importCode : imports) {
+               if (importCode.indexOf("*")!=-1){
+                   if (hit==i){
+                       targerImport = importCode;
+                       break;
+                   }
+                   hit++;
+               }
+           }
+       }
+        if (StringUtil.isEmpty(targerImport)){
+            return null;
+        }else{
+            targerImport = getSimpleImport(targerImport);
+            return targerImport+className;
+        }
+
+    }
+
+    private String getSimpleImport(String targerImport) {
+        int index = targerImport.indexOf("import");
+        targerImport = targerImport.replace("import","");
+        targerImport = targerImport.replace("*","");
+        return targerImport.trim();
+    }
 
 
     private String getLimitGroup(JavaParameter parameter){
@@ -159,21 +272,30 @@ public class QdoxClassServieImpl implements ClassService {
        log.debug("字段名{}的描述是{}",field.getName(),fieldDesc);
       return fieldDesc;
     }
-
-    /**
-     * 根据解析器的数据类型，匹配文档的数据类型
-     * @param javaClass
-     * @return
-     */
     @Override
-    public DataType getDataTypeByJavaClass(JavaClass javaClass){
-        //TODO 预期String,boolean,实际未知
-       String typeName = javaClass.getName();
-      return  DataType.valueOf(typeName);
+    public DataType getDataType(JavaClass clazz) {
+        String className  = AnnotationUtil.getSimpleClassName(clazz.getCanonicalName());
+        if (JavaConstant.NUMBER_TYPES.contains(className)){
+            return DataType.NUMBER;
+        }
+        if (JavaConstant.STRING_TPYE.equals(className)){
+            return DataType.STRING;
+        }
+        if (JavaConstant.LIST_TPYE.equals(className)){
+            return DataType.ARRAY;
+        }
+        return DataType.OBJECT;
     }
-    private boolean isBaseType(JavaClass javaClass){
-        String className = javaClass.getName();
-        return JavaConstant.OWN_TYPE.contains(className);
+
+    private boolean isBean(JavaClass javaClass){
+        if (javaClass.isEnum()){
+            return false;
+        }
+        if (javaClass.isArray()){
+            return false;
+        }
+        String className = AnnotationUtil.getSimpleClassName(javaClass.getName());
+        return !JavaConstant.OWN_TYPE.contains(className);
     }
 
     private boolean isLimitParameter(JavaParameter parameter) {

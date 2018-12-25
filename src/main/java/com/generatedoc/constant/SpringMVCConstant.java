@@ -62,4 +62,14 @@ public class SpringMVCConstant {
         REQUEST_TYPE_MAP.put(PATCH_ANNOTATION,RequestType.PATCH);
     }
 
+    /**
+     * 不是请求参数的类型
+     */
+    public static final List<String> NOT_REQUEST_PARAMETER_TYPE = new ArrayList<>();
+    static {
+        NOT_REQUEST_PARAMETER_TYPE.add("BindingResult");
+        NOT_REQUEST_PARAMETER_TYPE.add("HttpServletRequest");
+        NOT_REQUEST_PARAMETER_TYPE.add("HttpServletResponse");
+    }
+
 }

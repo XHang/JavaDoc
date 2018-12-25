@@ -40,6 +40,7 @@ public class MethodServiceImpl implements MethodService {
 
     @Override
     public ApiInterface methodToDoc(JavaMethod javaMethod) {
+        log.debug("开始抽取方法{}的信息",javaMethod.getName());
         ApiInterface apiInterface = new ApiInterface();
         buildAuthor(javaMethod,apiInterface);
         apiInterface.setDesc(getInterfaceDesc(javaMethod));
@@ -117,12 +118,21 @@ public class MethodServiceImpl implements MethodService {
             return prefix;
         }
        String suffix =  getUrl(methodAnnotation);
-        return removeBothSideChar(prefix+suffix);
+        return prefix+suffix;
     }
     private String getUrl(JavaAnnotation annotation){
         List<String> urls = new ArrayList<>();
         try {
-            urls = (List<String>) annotation.getNamedParameter(SpringMVCConstant.REQUEST_URL_VALUE);
+            Object path =annotation.getNamedParameter(SpringMVCConstant.REQUEST_URL_VALUE);
+            if (path == null){
+                path = annotation.getNamedParameter(SpringMVCConstant.REQUEST_URL_PATH);
+            }
+            if (path instanceof String){
+                return removeBothSideChar(path+"");
+            }else{
+                urls = (List<String>) path;
+            }
+
         } catch (ClassCastException e) {
             log.error("取得注解{}里面的路径(path  or value)失败了",annotation.getType().getName());
             return "";
@@ -131,7 +141,7 @@ public class MethodServiceImpl implements MethodService {
             return "";
         }
         //只拿一个URL就够了吧
-        return urls.get(0);
+        return removeBothSideChar(urls.get(0));
     }
 
     /**
@@ -200,12 +210,28 @@ public class MethodServiceImpl implements MethodService {
         }
         List<ParameterDesc> parameterDescs = new ArrayList<>();
         for (JavaParameter parameter : parameters) {
+            if (!isRequestParameter(parameter)){
+                continue;
+            }
             List<ParameterDesc> descs = parameterService.parameterToDoc(parameter,javaMethod);
             parameterDescs.addAll(descs);
         }
         apiInterface.setParameters(parameterDescs);
     }
 
+    /**
+     * 有些请求参数不是前端的请求，比如说BindingResult或者request类型
+     * @param parameter
+     * @return
+     */
+    private boolean isRequestParameter(JavaParameter parameter) {
+        JavaClass javaClass = parameter.getJavaClass();
+        String simpleName = AnnotationUtil.getSimpleClassName(javaClass.getName());
+        if (SpringMVCConstant.NOT_REQUEST_PARAMETER_TYPE.contains(simpleName)){
+            return false;
+        }
+        return true;
+    }
 
 
     private void buildAuthor(JavaMethod javaMethod, ApiInterface apiInterface) {

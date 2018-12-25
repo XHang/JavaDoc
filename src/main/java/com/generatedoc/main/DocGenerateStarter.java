@@ -4,6 +4,7 @@ import com.generatedoc.constant.SpringMVCConstant;
 import com.generatedoc.entity.APIDocument;
 import com.generatedoc.entity.ApiInterface;
 import com.generatedoc.filter.JavaFileFilter;
+import com.generatedoc.service.ContextService;
 import com.generatedoc.service.DocmentsService;
 import com.generatedoc.service.MethodService;
 import com.generatedoc.util.AnnotationUtil;
@@ -38,14 +39,17 @@ public class DocGenerateStarter {
     @Autowired
     private  MethodService methodService;
 
+    @Autowired
+    private ContextService contextService;
+
     public  void run (){
     /*    System.out.println("请输入文件夹路径");
         String path = IOUtil.getInput();
         System.out.println("请输入生成接口文件的路径");
         String targetpath = IOUtil.getInput();*/
-    String path = "D:\\gddxit-project\\kunming-marketing-service\\wwis-flowapplication";
-    
+        String path = "D:\\gddxit-project\\kunming-marketing-service\\wwis-flowapplication";
         List<File> files = getJavaFilesByPath(path);
+        contextService.setContext(files);
         List<APIDocument> documents = generateDoc(files);
         String targetpath = "E:\\工作目录\\昆明\\接口文档\\setting接口文档生成";
         saveDoc(targetpath,documents);
@@ -88,7 +92,7 @@ public class DocGenerateStarter {
      * @return
      */
    private   APIDocument generationApiDocment(JavaClass javaClass){
-       log.debug("开始生成类{}的接口文档",javaClass.getName());
+       log.debug("开始抽取类{}的数据作为接口文档数据",javaClass.getName());
        APIDocument document = new APIDocument();
        document.setAuthor(buildAuthor(javaClass));
        document.setDate(LocalDateTime.now());

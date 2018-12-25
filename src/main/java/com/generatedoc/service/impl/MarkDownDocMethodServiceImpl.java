@@ -9,6 +9,8 @@ import com.generatedoc.service.MarkDownDocMethodService;
 import com.generatedoc.util.DateUitl;
 import com.generatedoc.util.MarkdownUtil;
 import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -17,8 +19,10 @@ import java.util.List;
 
 @Service
 public class MarkDownDocMethodServiceImpl implements MarkDownDocMethodService {
+     public static final Logger log = LoggerFactory.getLogger(MarkDownDocMethodServiceImpl.class);
     @Override
     public void buildMethodDoc(ApiInterface apiInterface, StringBuilder sb, int index) {
+        log.debug("开始生成方法{}的接口文档",apiInterface.getDesc());
         buildTitle(apiInterface,sb,index);
         sb.append(MarkdownUtil.buildSingleOrderItem(1,"编写人员："+apiInterface.getAuthor()));
         sb.append(MarkdownUtil.buildSingleOrderItem(2,"功能: "+apiInterface.getDesc()));
@@ -57,6 +61,7 @@ public class MarkDownDocMethodServiceImpl implements MarkDownDocMethodService {
         dto.setColumns(column);
         List<List<String>> data = new ArrayList<>();
         for (ReturnFieldDesc returnFieldDesc : returnFieldDescs) {
+            log.debug("生成响应参数{}的解释",returnFieldDesc.getParameterName());
             List<String> row = new ArrayList<>();
             row.add(returnFieldDesc.getParameterName());
             row.add(returnFieldDesc.getParameterDesc());
@@ -99,6 +104,7 @@ public class MarkDownDocMethodServiceImpl implements MarkDownDocMethodService {
         column.add("默认值");
         List<List<String>> data = new ArrayList<>();
         for (ParameterDesc desc : list) {
+            log.debug("生成请求参数{}的解释",desc.getParameterName());
             List<String> row = new ArrayList<>();
             row.add(desc.getParameterName());
             row.add(desc.getParameterDesc());
