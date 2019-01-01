@@ -1,11 +1,11 @@
 package com.generatedoc.util;
 
 import com.generatedoc.exception.DOCError;
+import com.generatedoc.filter.InterfactFilter;
 import com.thoughtworks.qdox.JavaProjectBuilder;
 import com.thoughtworks.qdox.model.JavaAnnotation;
 import com.thoughtworks.qdox.model.JavaClass;
 import com.thoughtworks.qdox.model.JavaSource;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,7 +39,7 @@ public class FileUtil {
      * @param javaFile java为文件
      * @param classs 存放对外接口类的集合
      */
-    public static void  getControlClass(File javaFile,List<JavaClass> classs){
+    public static void  getControlClass(File javaFile,List<JavaClass> classs,InterfactFilter filter){
         try {
             logger.debug("判断Java文件【{}】里面的类是否是控制器类",javaFile.getName());
             JavaProjectBuilder javaProjectBuilder = new JavaProjectBuilder();
@@ -52,6 +52,9 @@ public class FileUtil {
 
             List<JavaClass> clazzs =  source.getClasses();
            for (JavaClass javaClass:clazzs){
+               if (filter.isNeedClass(javaClass)){
+                   classs.add(javaClass);
+               }
                logger.debug("开始遍历该文件的【{}】类",javaClass.getName());
                List<JavaAnnotation> annotations = javaClass.getAnnotations();
                for (JavaAnnotation javaAnnotation:annotations){

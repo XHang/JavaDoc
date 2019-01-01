@@ -4,6 +4,7 @@ import com.generatedoc.constant.SpringMVCConstant;
 import com.generatedoc.entity.APIDocument;
 import com.generatedoc.entity.ApiInterface;
 import com.generatedoc.filter.JavaFileFilter;
+import com.generatedoc.service.ClassService;
 import com.generatedoc.service.ContextService;
 import com.generatedoc.service.DocmentsService;
 import com.generatedoc.service.MethodService;
@@ -41,6 +42,7 @@ public class DocGenerateStarter {
 
     @Autowired
     private ContextService contextService;
+    private ClassService classService;
 
     public  void run (){
     /*    System.out.println("请输入文件夹路径");
@@ -79,7 +81,7 @@ public class DocGenerateStarter {
    public   List<APIDocument> generateDoc(List<File> files){
       List<JavaClass> javaClasses = new ArrayList<>();
       //将文件集合里面的对外接口类抽取出来，填充到javaClasses里面
-      files.forEach(file -> FileUtil.getControlClass(file,javaClasses));
+      files.forEach(file -> classService.getControlClass(file,javaClasses));
       List<APIDocument> apiDocuments = new ArrayList<>();
       //将对外接口类转成接口文档对象
        javaClasses.forEach((javaClass -> apiDocuments.add(generationApiDocment(javaClass))));
