@@ -22,9 +22,18 @@ public interface ClassService {
 
     public static final Logger logger = LoggerFactory.getLogger(ClassService.class);
 
+    /**
+     * 获取参数类型的类属性描述，
+     * @param parameter
+     * @return
+     */
     List<ClassFieldDesc> getJavaClassDesc(JavaParameter parameter);
 
-
+    /**
+     * 获取类的类属性描述
+     * @param javaClass
+     * @return
+     */
     List<ClassFieldDesc> getJavaClassDesc(JavaClass javaClass);
 
     /**
@@ -47,19 +56,26 @@ public interface ClassService {
 
            List<JavaClass> clazzs = source.getClasses();
            for (JavaClass javaClass : clazzs) {
-               if (isInterfactClass(javaClass) && isNotExist(javaClass)) {
+               if (isInterfactClass(javaClass) && isExist(javaClass)) {
                    classs.add(javaClass);
                }
            }
        }catch(Exception e){
-
+           throw new DOCError("在判断java文件是否是control时出错了，文件名是：【"+javaFile.getName()+"]");
        }
    }
 
-    default boolean isNotExist(JavaClass javaClass){
+    /**
+     * 判断类是否处于用户指定的过滤范围内
+     * @param javaClass
+     * @return
+     */
+     boolean isExist(JavaClass javaClass);
 
-        return false;
-    }
-
-    public boolean isInterfactClass(JavaClass javaClass);
+    /**
+     * 判断类是否属于接口类，如Controller类
+     * @param javaClass
+     * @return
+     */
+     boolean isInterfactClass(JavaClass javaClass);
 }

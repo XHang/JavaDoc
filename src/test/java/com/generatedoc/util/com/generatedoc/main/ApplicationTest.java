@@ -24,7 +24,6 @@ public class ApplicationTest {
             if ("BudgetControl.java".equals(file.getName())){
                 System.out.println("catch it");
             }
-            FileUtil.getControlClass(file,javaClasses);
             return ;
         });
         javaClasses.forEach((javaClass -> {

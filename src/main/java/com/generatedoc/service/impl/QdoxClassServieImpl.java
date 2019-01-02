@@ -1,5 +1,6 @@
 package com.generatedoc.service.impl;
 
+import com.generatedoc.config.ApplicationConfig;
 import com.generatedoc.constant.JavaConstant;
 import com.generatedoc.constant.ValidConstant;
 import com.generatedoc.context.ClassContext;
@@ -7,8 +8,11 @@ import com.generatedoc.emnu.DataType;
 import com.generatedoc.emnu.RuleType;
 import com.generatedoc.entity.ClassFieldDesc;
 import com.generatedoc.entity.FieldRule;
+import com.generatedoc.exception.DOCError;
 import com.generatedoc.service.ClassService;
+import com.generatedoc.service.ControllerService;
 import com.generatedoc.util.AnnotationUtil;
+import com.generatedoc.util.ArraysUtil;
 import com.generatedoc.util.StringUtil;
 import com.thoughtworks.qdox.model.*;
 import com.thoughtworks.qdox.model.impl.DefaultJavaParameterizedType;
@@ -16,14 +20,25 @@ import com.thoughtworks.qdox.model.impl.JavaClassParent;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.xml.crypto.Data;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 @Service
 public class QdoxClassServieImpl implements ClassService {
      public static final Logger log = LoggerFactory.getLogger(QdoxClassServieImpl.class);
+
+     @Autowired
+   private ControllerService controllerService;
+
+     @Autowired
+     ApplicationConfig config;
+
     @Override
     public List<ClassFieldDesc> getJavaClassDesc( JavaParameter parameter) {
         JavaClass clazz = parameter.getJavaClass();
@@ -76,7 +91,7 @@ public class QdoxClassServieImpl implements ClassService {
     }
 
     /**
-     * @param type
+     * @param field
      * @return
      */
     private JavaClass getCollectionBean(JavaField field) {
@@ -285,6 +300,64 @@ public class QdoxClassServieImpl implements ClassService {
             return DataType.ARRAY;
         }
         return DataType.OBJECT;
+    }
+
+    @Override
+    public boolean isExist(JavaClass javaClass) {
+        logger.debug("判断类{}是否在给定的过滤集合中",javaClass.getFullyQualifiedName());
+        String[] filters = config.getFilters();
+        if (ArraysUtil.isEmpty(filters)){
+            return true;
+        }
+        for (String filter : filters) {
+           String className =  getClassName(filter);
+           if (StringUtil.isEmpty(className)){
+               continue;
+           }
+           if (className.equals(javaClass.getFullyQualifiedName())){
+               logger.debug("类{}在给定的过滤集合中",javaClass.getFullyQualifiedName());
+               return true;
+           }
+        }
+        logger.debug("类{}不在给定的过滤集合中",javaClass.getFullyQualifiedName());
+        return false;
+    }
+
+    /**
+     * input :<pre>com.example.controller.ExampleControl.list</pre>
+     * output:<pre>com.example.controller.ExampleControl</pre>
+     * @param filter
+     * @return
+     */
+    private String  getClassName(String filter) {
+        int  lastIndex  = filter.lastIndexOf(".");
+        String suffix = filter.substring(lastIndex+1,filter.length());
+        if (StringUtil.isFirstUpperCase(suffix)){
+            return filter;
+        }else{
+            String prefix = filter.substring(0,lastIndex);
+            return prefix;
+        }
+
+
+    }
+
+
+    @Override
+    public boolean isInterfactClass(JavaClass javaClass) {
+        logger.debug("开始遍历该文件的【{}】类",javaClass.getName());
+        List<JavaAnnotation> annotations = javaClass.getAnnotations();
+        for (JavaAnnotation javaAnnotation:annotations){
+            String annotatianName  = javaAnnotation.getType().getCanonicalName();
+            logger.debug("开始遍历该类【{}】的【{}】注解",javaClass.getName(),annotatianName);
+            annotatianName = StringUtil.getClassNameForFullName(annotatianName);
+            if (controllerService.isControlAnnotation(annotatianName)){
+                logger.info("该类【{}】的注解【{}】是控制器注解",javaClass.getName(),annotatianName);
+                return true;
+            }
+        }
+        logger.debug("该类没有关键注解,故不是控制器类",javaClass.getName());
+        return false;
     }
 
     private boolean isBean(JavaClass javaClass){

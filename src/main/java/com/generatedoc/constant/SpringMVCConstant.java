@@ -72,4 +72,10 @@ public class SpringMVCConstant {
         NOT_REQUEST_PARAMETER_TYPE.add("HttpServletResponse");
     }
 
+    public static final List<String> CONTROLLER_NAMES = new ArrayList<>();
+    static {
+        CONTROLLER_NAMES.add("Controller");
+        CONTROLLER_NAMES.add("RestController");
+    }
+
 }

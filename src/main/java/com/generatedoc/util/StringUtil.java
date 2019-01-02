@@ -43,4 +43,17 @@ public class StringUtil {
         }
         return src.substring(1,src.length()-1);
     }
+
+    /**
+     * 检测给定的字符串，首字母是否大写
+     * @param str
+     * @return
+     */
+    public static final boolean isFirstUpperCase(String str){
+        char first = str.charAt(0);
+        if (first<'a'){
+            return true;
+        }
+        return false;
+    }
 }
