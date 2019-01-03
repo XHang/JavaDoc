@@ -282,10 +282,10 @@ public class QdoxClassServieImpl implements ClassService {
                 ||  AnnotationUtil.isExistAnnotation("NotEmpty",annotations);
     }
 
-    private String getParameterDesc(JavaField field, JavaClass clazz) {
+    public String getParameterDesc(JavaField field, JavaClass clazz) {
        String fieldDesc =  field.getComment();
        log.debug("字段名{}的描述是{}",field.getName(),fieldDesc);
-      return fieldDesc;
+        return fieldDesc;
     }
     @Override
     public DataType getDataType(JavaClass clazz) {

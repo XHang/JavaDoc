@@ -10,21 +10,16 @@ import com.generatedoc.service.ClassService;
 import com.generatedoc.service.MethodService;
 import com.generatedoc.service.ParameterService;
 import com.generatedoc.util.AnnotationUtil;
-import com.generatedoc.util.ArraysUtil;
 import com.generatedoc.util.StringUtil;
 import com.thoughtworks.qdox.model.*;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections4.CollectionUtils;
-import org.omg.Dynamic.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.swing.*;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static com.generatedoc.util.StringUtil.removeBothSideChar;
@@ -38,20 +33,9 @@ public class MethodServiceImpl implements MethodService {
     @Autowired
     private ClassService classService;
 
-    @Override
-    public ApiInterface methodToDoc(JavaMethod javaMethod) {
-        log.debug("开始抽取方法{}的信息",javaMethod.getName());
-        ApiInterface apiInterface = new ApiInterface();
-        buildAuthor(javaMethod,apiInterface);
-        apiInterface.setDesc(getInterfaceDesc(javaMethod));
-        apiInterface.setRequestType(getRequestType(javaMethod));
-        apiInterface.setUrl(getUrl(javaMethod));
-        buildRequestDesc(javaMethod,apiInterface);
-        buildResponseDesc(javaMethod,apiInterface);
-        return apiInterface;
-    }
 
-    private String getInterfaceDesc(JavaMethod javaMethod) {
+    @Override
+    public String getInterfaceDesc(JavaMethod javaMethod) {
         String desc = javaMethod.getComment();
         if (StringUtil.isEmpty(desc)){
             log.warn("方法{}找不到合适的注释，取方法名作为方法的注释");
@@ -59,16 +43,16 @@ public class MethodServiceImpl implements MethodService {
         }
         return desc;
     }
-
-    private void buildResponseDesc(JavaMethod javaMethod, ApiInterface apiInterface) {
+    @Override
+    public List<ReturnFieldDesc> buildResponseDesc(JavaMethod javaMethod) {
         try {
             if (!isResponseBody(javaMethod)){
                 //暂时只支持Json序列化
-                return;
+                return null;
             }
             List<ClassFieldDesc> fieldDescs =classService.getJavaClassDesc(javaMethod.getReturns());
             if (CollectionUtils.isEmpty(fieldDescs)){
-                return;
+                return null;
             }
             List<ReturnFieldDesc> returnFieldDescs = new ArrayList<>();
             for (ClassFieldDesc classFieldDesc : fieldDescs) {
@@ -76,12 +60,11 @@ public class MethodServiceImpl implements MethodService {
                 BeanUtils.copyProperties(fieldDesc,classFieldDesc);
                 returnFieldDescs.add(fieldDesc);
             }
-            apiInterface.setReturnFieldDesc(returnFieldDescs);
+            return returnFieldDescs;
         } catch (Exception e) {
             log.error("处理返回值描述失败",e);
-            return;
+            return null;
         }
-
     }
 
     /**
@@ -103,8 +86,8 @@ public class MethodServiceImpl implements MethodService {
         return false;
 
     }
-
-    private String getUrl(JavaMethod javaMethod) {
+    @Override
+    public String getUrl(JavaMethod javaMethod) {
         JavaClass javaClass = javaMethod.getDeclaringClass();
         List<JavaAnnotation> annotations = javaClass.getAnnotations();
         JavaAnnotation classAnnotation = AnnotationUtil.getAnnotationByName(SpringMVCConstant.REQUEST_ANNOTATION,annotations);
@@ -160,13 +143,9 @@ public class MethodServiceImpl implements MethodService {
         return null;
     }
 
-    /**
-     * 获取请求方式
-     * @param javaMethod
-     * @return
-     */
-    private RequestType getRequestType(JavaMethod javaMethod) {
-        //TODO 暂不支持多请求啦
+
+    @Override
+    public RequestType getRequestType(JavaMethod javaMethod) {
         log.debug("开始判断方法{}的请求类型",javaMethod.getName());
         List<JavaAnnotation> annotations = javaMethod.getAnnotations();
         List<String> interAnnotations = SpringMVCConstant.CONTROLLER_METHOD;
@@ -202,11 +181,11 @@ public class MethodServiceImpl implements MethodService {
             return RequestType.UNKNOWN.name();
         }
     }
-
-    private void buildRequestDesc(JavaMethod javaMethod, ApiInterface apiInterface) {
+    @Override
+    public List<ParameterDesc> buildRequestDesc(JavaMethod javaMethod) {
         List<JavaParameter> parameters =  javaMethod.getParameters();
         if (CollectionUtils.isEmpty(parameters)){
-            return;
+            return null;
         }
         List<ParameterDesc> parameterDescs = new ArrayList<>();
         for (JavaParameter parameter : parameters) {
@@ -216,7 +195,7 @@ public class MethodServiceImpl implements MethodService {
             List<ParameterDesc> descs = parameterService.parameterToDoc(parameter,javaMethod);
             parameterDescs.addAll(descs);
         }
-        apiInterface.setParameters(parameterDescs);
+        return parameterDescs;
     }
 
     /**
@@ -233,8 +212,8 @@ public class MethodServiceImpl implements MethodService {
         return true;
     }
 
-
-    private void buildAuthor(JavaMethod javaMethod, ApiInterface apiInterface) {
+    @Override
+    public void buildAuthor(JavaMethod javaMethod, ApiInterface apiInterface) {
         DocletTag author = javaMethod.getTagByName("authod");
         if (author == null){
             apiInterface.setAuthor("  ");
@@ -243,18 +222,7 @@ public class MethodServiceImpl implements MethodService {
          apiInterface.setAuthor(author.getName());
     }
 
-    @Override
-    public List<ApiInterface> methodsToDoc(List<JavaMethod> interfaceMethod) {
-       if (CollectionUtils.isEmpty(interfaceMethod)){
-           return new ArrayList<>();
-       }
-        List<ApiInterface> datas = new ArrayList<>();
-        for (JavaMethod javaMethod : interfaceMethod) {
-            ApiInterface apiInterface =  methodToDoc(javaMethod);
-            datas.add(apiInterface);
-        }
-        return datas;
-    }
+
 
     /**
      * 是否是对外接口的方法
