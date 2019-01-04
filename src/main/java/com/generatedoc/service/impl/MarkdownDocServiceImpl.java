@@ -56,8 +56,8 @@ public class MarkdownDocServiceImpl implements DocmentsService {
         }
         for (int index = 0; index < interfaces.size(); index++) {
             ApiInterface apiInterface = interfaces.get(index);
-            //+3是前面的一二章被用了
-            methodService.buildMethodDoc(apiInterface,sb,index+3);
+            //+2是标题一被占用了
+            methodService.buildMethodDoc(apiInterface,sb,index+2);
         }
     }
 

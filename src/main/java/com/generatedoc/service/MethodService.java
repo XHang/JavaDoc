@@ -2,7 +2,6 @@ package com.generatedoc.service;
 
 import com.generatedoc.emnu.RequestType;
 import com.generatedoc.entity.ApiInterface;
-import com.generatedoc.entity.ParameterDesc;
 import com.generatedoc.entity.ReturnFieldDesc;
 import com.thoughtworks.qdox.model.JavaMethod;
 import org.apache.commons.collections4.CollectionUtils;
@@ -22,9 +21,9 @@ public interface MethodService {
         apiInterface.setDesc(getInterfaceDesc(javaMethod));
         apiInterface.setRequestType(getRequestType(javaMethod));
         apiInterface.setUrl(getUrl(javaMethod));
-        List<ParameterDesc> parameterDescs = buildRequestDesc(javaMethod);
-        apiInterface.setParameters(parameterDescs);
+        buildRequestDesc(javaMethod,apiInterface);
         List<ReturnFieldDesc> descs = buildResponseDesc(javaMethod);
+        apiInterface.setReturnFieldDesc(descs);
         return apiInterface;
     }
 
@@ -38,9 +37,10 @@ public interface MethodService {
     /**
      * 抽取方法里面参数的解释
      * @param javaMethod
+     * @param apiInterface
      * @return
      */
-    List<ParameterDesc> buildRequestDesc(JavaMethod javaMethod);
+    void buildRequestDesc(JavaMethod javaMethod, ApiInterface apiInterface);
 
     /**
      * 构建接口请求的URL

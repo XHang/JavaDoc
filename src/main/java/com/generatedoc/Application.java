@@ -22,7 +22,7 @@ public class Application implements CommandLineRunner {
     @Autowired
     private DocGenerateStarter generateStarter;
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         log.info("开始生成接口文档");
         generateStarter.run();
         log.info("接口文档生成结束");

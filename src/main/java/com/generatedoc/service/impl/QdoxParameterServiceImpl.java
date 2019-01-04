@@ -1,13 +1,12 @@
 package com.generatedoc.service.impl;
 
-import com.fasterxml.jackson.databind.util.BeanUtil;
 import com.generatedoc.emnu.DataType;
+import com.generatedoc.entity.ClassDesc;
 import com.generatedoc.entity.ClassFieldDesc;
-import com.generatedoc.entity.ParameterDesc;
+import com.generatedoc.entity.HeadParameterDesc;
 import com.generatedoc.exception.DOCError;
 import com.generatedoc.service.ClassService;
 import com.generatedoc.service.ParameterService;
-import com.generatedoc.util.AnnotationUtil;
 import com.thoughtworks.qdox.model.*;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections4.CollectionUtils;
@@ -16,8 +15,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 @Service
@@ -28,26 +25,18 @@ public class QdoxParameterServiceImpl implements ParameterService {
      private ClassService classService;
 
     @Override
-    public List<ParameterDesc> parameterToDoc(JavaParameter parameter, JavaMethod javaMethod) {
-        if(isBodyParameter(parameter)){
-            return bodyParameterToDoc(parameter);
-        }else{
-            return headerParameterToDoc(parameter,javaMethod);
-        }
-    }
-
-    private List<ParameterDesc> headerParameterToDoc(JavaParameter parameter, JavaMethod javaMethod) {
+    public List<HeadParameterDesc> headerParameterToDoc(JavaParameter parameter, JavaMethod javaMethod) {
         //TODO 小心别名啦
-        List<ParameterDesc> result = new ArrayList<>();
+        List<HeadParameterDesc> result = new ArrayList<>();
 
         if (isInnerParameter(parameter)){
             List<ClassFieldDesc> list = classService.getJavaClassDesc(parameter);
             for (ClassFieldDesc classFieldDesc : list) {
-                ParameterDesc desc = converClassFieldDesc(classFieldDesc);
+                HeadParameterDesc desc = converClassFieldDesc(classFieldDesc);
                 result.add(desc);
             }
         }else{
-            ParameterDesc desc = new ParameterDesc();
+            HeadParameterDesc desc = new HeadParameterDesc();
             desc.setDataType(classService.getDataType(parameter.getJavaClass()));
             desc.setParameterDesc(buildParameterDesc(parameter,javaMethod));
             desc.setParameterName(parameter.getName());
@@ -79,16 +68,16 @@ public class QdoxParameterServiceImpl implements ParameterService {
 
 
 
-
-    private List<ParameterDesc> bodyParameterToDoc(JavaParameter parameter) {
+    @Override
+    public List<ClassDesc> bodyParameterToDoc(JavaParameter parameter, JavaMethod javaMethod) {
         try {
             List<ClassFieldDesc> parameterDescs = classService.getJavaClassDesc(parameter);
-            List<ParameterDesc> result = new ArrayList<>();
+            List<HeadParameterDesc> result = new ArrayList<>();
             if (CollectionUtils.isEmpty(parameterDescs)){
                 return result;
             }
             for (ClassFieldDesc parameterDesc : parameterDescs) {
-                ParameterDesc desc = converClassFieldDesc(parameterDesc);
+                HeadParameterDesc desc = converClassFieldDesc(parameterDesc);
                 result.add(desc);
             }
             return result;
@@ -96,9 +85,9 @@ public class QdoxParameterServiceImpl implements ParameterService {
             throw new DOCError("抽取请求体参数信息失败",e);
         }
     }
-    public  ParameterDesc converClassFieldDesc(ClassFieldDesc fieldDesc){
+    public HeadParameterDesc converClassFieldDesc(ClassFieldDesc fieldDesc){
         try {
-            ParameterDesc parameterDesc = new ParameterDesc();
+            HeadParameterDesc parameterDesc = new HeadParameterDesc();
             BeanUtils.copyProperties(parameterDesc,fieldDesc);
             return parameterDesc;
         } catch (Exception e) {
@@ -112,7 +101,8 @@ public class QdoxParameterServiceImpl implements ParameterService {
      * @param parameter
      * @return
      */
-    private boolean isBodyParameter(JavaParameter parameter) {
+    @Override
+    public boolean isBodyParameter(JavaParameter parameter) {
         log.debug("开始判断参数{}是否是请求体参数",parameter.getName());
         List<JavaAnnotation> annotations = parameter.getAnnotations();
         if (CollectionUtils.isEmpty(annotations)){

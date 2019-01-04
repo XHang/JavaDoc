@@ -31,5 +31,7 @@ public class JavaConstant {
         OWN_TYPE.add("Map");
         OWN_TYPE.add(LIST_TPYE);
         OWN_TYPE.addAll(NUMBER_TYPES);
+        OWN_TYPE.add("Object");
+        OWN_TYPE.add("Date");
     }
 }

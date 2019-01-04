@@ -8,7 +8,7 @@ import com.generatedoc.emnu.YesOrNo;
 /**
  * 接口参数
  */
-public class ParameterDesc extends ClassFieldDesc {
+public class HeadParameterDesc extends ClassFieldDesc {
 
     /**
      * 默认值

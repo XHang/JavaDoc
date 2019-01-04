@@ -10,11 +10,21 @@ import org.springframework.core.env.Environment;
 public class ApplicationConfig {
     private String[] filters;
 
+    private String defaultAuthor;
+
     public String[] getFilters() {
         return filters;
     }
 
     public void setFilters(String[] filters) {
         this.filters = filters;
+    }
+
+    public String getDefaultAuthor() {
+        return defaultAuthor;
+    }
+
+    public void setDefaultAuthor(String defaultAuthor) {
+        this.defaultAuthor = defaultAuthor;
     }
 }

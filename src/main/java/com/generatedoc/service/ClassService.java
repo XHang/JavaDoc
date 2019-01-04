@@ -2,11 +2,8 @@ package com.generatedoc.service;
 
 import com.generatedoc.emnu.DataType;
 import com.generatedoc.entity.ClassFieldDesc;
-import com.generatedoc.entity.ParameterDesc;
 import com.generatedoc.exception.DOCError;
-import com.generatedoc.util.StringUtil;
 import com.thoughtworks.qdox.JavaProjectBuilder;
-import com.thoughtworks.qdox.model.JavaAnnotation;
 import com.thoughtworks.qdox.model.JavaClass;
 import com.thoughtworks.qdox.model.JavaParameter;
 import com.thoughtworks.qdox.model.JavaSource;
@@ -14,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 public interface ClassService {

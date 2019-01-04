@@ -42,6 +42,7 @@ public class DocGenerateStarter {
 
     @Autowired
     private ContextService contextService;
+    @Autowired
     private ClassService classService;
 
     public  void run (){
@@ -49,7 +50,7 @@ public class DocGenerateStarter {
         String path = IOUtil.getInput();
         System.out.println("请输入生成接口文件的路径");
         String targetpath = IOUtil.getInput();*/
-        String path = "D:\\gddxit-project\\kunming-marketing-service\\wwis-flowapplication";
+        String path = "D:\\gddxit-project\\kunming-marketing-service";
         List<File> files = getJavaFilesByPath(path);
         contextService.setContext(files);
         List<APIDocument> documents = generateDoc(files);

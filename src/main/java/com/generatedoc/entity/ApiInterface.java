@@ -20,9 +20,14 @@ public class ApiInterface {
      */
     private String url;
     /**
-     * 接口参数列表
+     * 请求体接口参数列表
      */
-    private List<ParameterDesc> parameters;
+    private List<ClassDesc> bodyParameters;
+
+    /**
+     * 请求体接口参数列表
+     */
+    private List<HeadParameterDesc> headerParameters;
     /**
      * 请求参数示例
      */
@@ -76,12 +81,13 @@ public class ApiInterface {
         this.url = url;
     }
 
-    public List<ParameterDesc> getParameters() {
-        return parameters;
+
+    public List<ClassDesc> getBodyParameters() {
+        return bodyParameters;
     }
 
-    public void setParameters(List<ParameterDesc> parameters) {
-        this.parameters = parameters;
+    public void setBodyParameters(List<ClassDesc> bodyParameters) {
+        this.bodyParameters = bodyParameters;
     }
 
     public String getParameterExample() {
@@ -130,5 +136,13 @@ public class ApiInterface {
 
     public void setTime(LocalDateTime time) {
         this.time = time;
+    }
+
+    public List<HeadParameterDesc> getHeaderParameters() {
+        return headerParameters;
+    }
+
+    public void setHeaderParameters(List<HeadParameterDesc> headerParameters) {
+        this.headerParameters = headerParameters;
     }
 }

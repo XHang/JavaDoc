@@ -167,5 +167,15 @@ public class MarkdownUtil {
        return "`"+code+"`"+System.lineSeparator();
     }
 
+    public static String escapeString(String src){
+       if (StringUtil.isEmpty(src)){
+           return src;
+       }
+        src =  src.replaceAll("\\|","\\\\|");
+        return src;
+    }
+    public static String buildBoldText(String text){
+        return "**"+text+"**"+" "+System.lineSeparator();
+    }
 
 }

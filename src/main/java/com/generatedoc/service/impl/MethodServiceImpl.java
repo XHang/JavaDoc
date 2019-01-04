@@ -1,11 +1,9 @@
 package com.generatedoc.service.impl;
 
+import com.generatedoc.config.ApplicationConfig;
 import com.generatedoc.constant.SpringMVCConstant;
 import com.generatedoc.emnu.RequestType;
-import com.generatedoc.entity.ApiInterface;
-import com.generatedoc.entity.ClassFieldDesc;
-import com.generatedoc.entity.ParameterDesc;
-import com.generatedoc.entity.ReturnFieldDesc;
+import com.generatedoc.entity.*;
 import com.generatedoc.service.ClassService;
 import com.generatedoc.service.MethodService;
 import com.generatedoc.service.ParameterService;
@@ -17,14 +15,13 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.generatedoc.util.StringUtil.removeBothSideChar;
 
-@Service
+//@Service
 public class MethodServiceImpl implements MethodService {
 
      public static final Logger log = LoggerFactory.getLogger(MethodServiceImpl.class);
@@ -32,6 +29,9 @@ public class MethodServiceImpl implements MethodService {
     private ParameterService parameterService;
     @Autowired
     private ClassService classService;
+
+    @Autowired
+    private ApplicationConfig config;
 
 
     @Override
@@ -182,20 +182,27 @@ public class MethodServiceImpl implements MethodService {
         }
     }
     @Override
-    public List<ParameterDesc> buildRequestDesc(JavaMethod javaMethod) {
+    public void buildRequestDesc(JavaMethod javaMethod, ApiInterface apiInterface) {
         List<JavaParameter> parameters =  javaMethod.getParameters();
         if (CollectionUtils.isEmpty(parameters)){
-            return null;
+            return ;
         }
-        List<ParameterDesc> parameterDescs = new ArrayList<>();
+        List<ClassDesc> bodyParameterDesc = new ArrayList<>();
+        List<HeadParameterDesc> headParameterDesc = new ArrayList<>();
         for (JavaParameter parameter : parameters) {
             if (!isRequestParameter(parameter)){
                 continue;
             }
-            List<ParameterDesc> descs = parameterService.parameterToDoc(parameter,javaMethod);
-            parameterDescs.addAll(descs);
+            if (parameterService.isBodyParameter(parameter)){
+                List<ClassDesc> descs = parameterService.bodyParameterToDoc(parameter,javaMethod);
+                bodyParameterDesc.addAll(descs);
+            }else{
+                List<HeadParameterDesc> descs = parameterService.headerParameterToDoc(parameter,javaMethod);
+                headParameterDesc.addAll(descs);
+            }
         }
-        return parameterDescs;
+        apiInterface.setBodyParameters(bodyParameterDesc);
+        apiInterface.setHeaderParameters(headParameterDesc);
     }
 
     /**
@@ -216,10 +223,16 @@ public class MethodServiceImpl implements MethodService {
     public void buildAuthor(JavaMethod javaMethod, ApiInterface apiInterface) {
         DocletTag author = javaMethod.getTagByName("authod");
         if (author == null){
-            apiInterface.setAuthor("  ");
-            return;
+            String authorName = config.getDefaultAuthor();
+            if (StringUtil.isEmpty(authorName)){
+                apiInterface.setAuthor("未知");
+            }else{
+                apiInterface.setAuthor(authorName);
+            }
+        }else{
+            apiInterface.setAuthor(author.getName());
         }
-         apiInterface.setAuthor(author.getName());
+
     }
 
 

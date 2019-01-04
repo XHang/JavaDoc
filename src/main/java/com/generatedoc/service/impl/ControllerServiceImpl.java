@@ -1,25 +1,29 @@
 package com.generatedoc.service.impl;
 
+import com.generatedoc.config.ApplicationConfig;
 import com.generatedoc.constant.SpringMVCConstant;
 import com.generatedoc.entity.ApiInterface;
 import com.generatedoc.service.ControllerService;
 import com.generatedoc.service.MethodService;
+import com.generatedoc.util.ArraysUtil;
 import com.generatedoc.util.StringUtil;
 import com.thoughtworks.qdox.model.DocletTag;
 import com.thoughtworks.qdox.model.JavaClass;
 import com.thoughtworks.qdox.model.JavaMethod;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
+//@Service
 public class ControllerServiceImpl implements ControllerService {
 
     @Autowired
     private MethodService methodService;
+
+    @Autowired
+    private ApplicationConfig config;
 
     @Override
     public boolean isControlAnnotation(String annotatianName) {
@@ -41,11 +45,33 @@ public class ControllerServiceImpl implements ControllerService {
             return new ArrayList<>();
         }
         methods.forEach(method -> {
-            if (methodService.isInterfactMethod(method)){
+            if (methodService.isInterfactMethod(method) && isExistFilter(method)){
                 interfaceMethods.add(method);
             }
         });
         return interfaceMethods;
+    }
+
+    private boolean isExistFilter(JavaMethod method) {
+        log.debug("判断方法{}是否处于过滤集合内",method.getName());
+       String fullName =  method.getDeclaringClass().getFullyQualifiedName();
+       String[] filters = config.getFilters();
+       if (ArraysUtil.isEmpty(filters)){
+           log.debug("由于过滤集合为空，将生成方法的{}接口文档",method.getName());
+           return true;
+       }
+       if (ArraysUtil.contains(filters,fullName)){
+           log.debug("由于方法所属的类{}在过滤集合内，将生成方法的{}接口文档",fullName,method.getName());
+           return true;
+       }
+       fullName = fullName+"."+method.getName();
+       if (ArraysUtil.contains(filters,fullName)){
+           log.debug("由于方法全称{}在过滤集合内，将生成方法的{}接口文档",fullName,method.getName());
+           return true;
+       }
+        log.debug("由于方法{}不在过滤集合内，不生成接口文档",method.getName());
+       return false;
+
     }
 
     @Override

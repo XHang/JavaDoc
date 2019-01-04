@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import javax.xml.crypto.Data;
 import java.util.ArrayList;
@@ -43,7 +44,7 @@ public class QdoxClassServieImpl implements ClassService {
     public List<ClassFieldDesc> getJavaClassDesc( JavaParameter parameter) {
         JavaClass clazz = parameter.getJavaClass();
         List<ClassFieldDesc> result = new ArrayList<>();
-        getJavaClassDesc(clazz,result,isLimitParameter(parameter),"");
+        getJavaClassDesc(clazz,result,isLimitParameter(parameter),"",new ArrayList<>());
         return result;
     }
 
@@ -55,19 +56,30 @@ public class QdoxClassServieImpl implements ClassService {
     @Override
     public List<ClassFieldDesc> getJavaClassDesc( JavaClass javaClass) {
         List<ClassFieldDesc> result = new ArrayList<>();
-        getJavaClassDesc(javaClass,result,false,"");
+        getJavaClassDesc(javaClass,result,false,"",new ArrayList<>());
         return result;
     }
 
+    public void getJavaClassDescForHeadParameter(JavaClass clazz,List<ClassFieldDesc> container,List<JavaClass> aleradyResolve){
 
-    public void getJavaClassDesc( JavaClass clazz,List<ClassFieldDesc> container,boolean isLimit,String groupName) {
-        //TODO getField和getBeanProperties有何不同呢？
+    }
+
+    public void getJavaClassDescForBodyParameter( JavaClass clazz,List<ClassFieldDesc> container,boolean isLimit,String groupName,List<JavaClass> aleradyResolve) {
         //TODO Rule的分组需要加
         //TODO 小心json的别名！
         clazz = getRealClass(clazz);
+        if (isAleradyResolve(clazz,aleradyResolve)){
+            return;
+        }
+        aleradyResolve.add(clazz);
+        log.debug("开始抽取类{}的字段信息",clazz.getName());
         List<JavaField> fields =  clazz.getFields();
         //List<ClassFieldDesc> result = new ArrayList<>();
         for (JavaField field : fields) {
+            if (!isMemberVar(field)){
+                log.debug("字段{}非成员变量，跳过解析",field.getName());
+                continue;
+            }
             log.debug("开始遍历类{}的字段{}",clazz.getName(),field.getName());
             ClassFieldDesc desc = new ClassFieldDesc();
             desc.setDataType(getDataType(field.getType()));
@@ -80,14 +92,44 @@ public class QdoxClassServieImpl implements ClassService {
             }
             //如果当前遍历的字段是非基本类型，也就是说，是Bean
             if (isBean(field.getType())){
-                getJavaClassDesc(field.getType(),container,isLimit,groupName);
+                getJavaClassDesc(field.getType(),container,isLimit,groupName,aleradyResolve);
             }
             JavaClass innerClass = null;
-            if ((innerClass = getCollectionBean(field))!=null){
-                getJavaClassDesc(innerClass,container,isLimit,groupName);
+            if ((innerClass = getCollectionBean(field))!=null ){
+                getJavaClassDesc(innerClass,container,isLimit,groupName,aleradyResolve);
             }
             container.add(desc);
         }
+        if (isNeedGetSuperClassDesc(clazz)){
+            getJavaClassDesc(clazz.getSuperJavaClass(),container,isLimit,groupName,aleradyResolve);
+        }
+    }
+
+    private boolean isAleradyResolve(JavaClass clazz, List<JavaClass> aleradyResolve) {
+        return aleradyResolve.contains(clazz);
+    }
+
+    private boolean isNeedGetSuperClassDesc(JavaClass javaClass){
+        JavaClass superClass = javaClass.getSuperJavaClass();
+        if (superClass == null){
+            log.debug("类{}没有父类{}",javaClass.getName());
+            return false;
+        }
+        log.debug("类{}有父类{}",javaClass.getName(),superClass.getName());
+        if (superClass.isInterface()){
+            log.debug("类{}的父类{}是接口类",javaClass.getName(),superClass.getName());
+            return false;
+        }
+        if (isBean(superClass)){
+            log.debug("类{}的父类{}是Bean，可以抽取类信息",javaClass.getName(),superClass.getName());
+            return true;
+        }
+        log.debug("类{}的父类{}不是Bean，不可以抽取类信息",javaClass.getName(),superClass.getName());
+        return false;
+
+    }
+    private boolean isMemberVar(JavaField field){
+        return !field.isStatic();
     }
 
     /**
@@ -120,7 +162,7 @@ public class QdoxClassServieImpl implements ClassService {
                 javaClass = tryGetRealClass(clazz);
             }
             if (javaClass == null){
-                log.warn("上下文没有找到类{}，无法生成该类的字段描述",clazz.getName());
+                log.warn("上下文没有找到类的源码{}",clazz.getName());
                 return clazz;
             }
         }
@@ -307,6 +349,7 @@ public class QdoxClassServieImpl implements ClassService {
         logger.debug("判断类{}是否在给定的过滤集合中",javaClass.getFullyQualifiedName());
         String[] filters = config.getFilters();
         if (ArraysUtil.isEmpty(filters)){
+            log.warn("没有配置过滤控制器的信息，将为所有的控制器生成接口文档");
             return true;
         }
         for (String filter : filters) {
