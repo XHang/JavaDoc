@@ -39,7 +39,7 @@ public class ApiInterface {
     /**
      * 接口返回值的解释
      */
-    private List<ReturnFieldDesc> returnFieldDesc;
+    private List<ClassDesc> responseDesc;
 
     /**
      * 返回值示例。
@@ -106,12 +106,12 @@ public class ApiInterface {
         this.returnType = returnType;
     }
 
-    public List<ReturnFieldDesc> getReturnFieldDesc() {
-        return returnFieldDesc;
+    public List<ClassDesc> getResponseDesc() {
+        return responseDesc;
     }
 
-    public void setReturnFieldDesc(List<ReturnFieldDesc> returnFieldDesc) {
-        this.returnFieldDesc = returnFieldDesc;
+    public void setResponseDesc(List<ClassDesc> responseDesc) {
+        this.responseDesc = responseDesc;
     }
 
     public String getReturnExample() {

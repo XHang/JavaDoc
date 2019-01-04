@@ -88,11 +88,17 @@ public class MarkDownDocMethodServiceImpl implements MarkDownDocMethodService {
     }
 
     private void buildResponseDesc(StringBuilder sb, ApiInterface apiInterface) {
-        List<ReturnFieldDesc> returnFieldDescs = apiInterface.getReturnFieldDesc();
-        if (CollectionUtils.isEmpty(returnFieldDescs)){
+        List<ClassDesc> responseDescList = apiInterface.getResponseDesc();
+        if (CollectionUtils.isEmpty(responseDescList)){
             sb.append(MarkdownUtil.buildText("无"));
             return;
         }
+        for (ClassDesc responseDesc : responseDescList) {
+            sb.append(MarkdownUtil.buildBoldText(responseDesc.getClassDesc()+"字段解释"));
+            writeResponseFieldDesc(sb,responseDesc.getClassFieldDescs());
+        }
+    }
+    private void writeResponseFieldDesc(StringBuilder write,List<ClassFieldDesc> fields){
         List<String> column = new ArrayList<>();
         column.add("字段名");
         column.add("字段解释");
@@ -100,16 +106,16 @@ public class MarkDownDocMethodServiceImpl implements MarkDownDocMethodService {
         MarkDownTableDto dto = new MarkDownTableDto();
         dto.setColumns(column);
         List<List<String>> data = new ArrayList<>();
-        for (ReturnFieldDesc returnFieldDesc : returnFieldDescs) {
-            log.debug("生成响应参数{}的解释",returnFieldDesc.getParameterName());
+        for (ClassFieldDesc field : fields) {
+            log.debug("生成响应参数{}的解释",field.getParameterName());
             List<String> row = new ArrayList<>();
-            row.add(returnFieldDesc.getParameterName());
-            row.add(returnFieldDesc.getParameterDesc());
-            row.add(returnFieldDesc.getDataType().getName());
+            row.add(field.getParameterName());
+            row.add(field.getParameterDesc());
+            row.add(field.getDataType().getName());
             data.add(row);
         }
         dto.setData(data);
-        sb.append(MarkdownUtil.buildTable(dto));
+        write.append(MarkdownUtil.buildTable(dto));
     }
 
     private void buildRequestExample(StringBuilder sb, ApiInterface apiInterface) {

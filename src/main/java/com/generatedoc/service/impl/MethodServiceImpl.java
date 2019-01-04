@@ -44,23 +44,14 @@ public class MethodServiceImpl implements MethodService {
         return desc;
     }
     @Override
-    public List<ReturnFieldDesc> buildResponseDesc(JavaMethod javaMethod) {
+    public List<ClassDesc> buildResponseDesc(JavaMethod javaMethod) {
         try {
             if (!isResponseBody(javaMethod)){
                 //暂时只支持Json序列化
                 return null;
             }
-            List<ClassFieldDesc> fieldDescs =classService.getJavaClassDesc(javaMethod.getReturns());
-            if (CollectionUtils.isEmpty(fieldDescs)){
-                return null;
-            }
-            List<ReturnFieldDesc> returnFieldDescs = new ArrayList<>();
-            for (ClassFieldDesc classFieldDesc : fieldDescs) {
-                ReturnFieldDesc fieldDesc = new ReturnFieldDesc();
-                BeanUtils.copyProperties(fieldDesc,classFieldDesc);
-                returnFieldDescs.add(fieldDesc);
-            }
-            return returnFieldDescs;
+            List<ClassDesc> fieldDescs =classService.getJavaClassDescForResponer(javaMethod.getReturns());
+            return fieldDescs;
         } catch (Exception e) {
             log.error("处理返回值描述失败",e);
             return null;

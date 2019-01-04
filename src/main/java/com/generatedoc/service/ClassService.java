@@ -1,6 +1,7 @@
 package com.generatedoc.service;
 
 import com.generatedoc.emnu.DataType;
+import com.generatedoc.entity.ClassDesc;
 import com.generatedoc.entity.ClassFieldDesc;
 import com.generatedoc.exception.DOCError;
 import com.thoughtworks.qdox.JavaProjectBuilder;
@@ -19,18 +20,18 @@ public interface ClassService {
     public static final Logger logger = LoggerFactory.getLogger(ClassService.class);
 
     /**
-     * 获取参数类型的类属性描述，
+     * 获取请求体参数类型的类属性描述，
      * @param parameter
      * @return
      */
-    List<ClassFieldDesc> getJavaClassDesc(JavaParameter parameter);
+    List<ClassDesc> getJavaClassDescForBodyParameter(JavaParameter parameter);
 
     /**
      * 获取类的类属性描述
      * @param javaClass
      * @return
      */
-    List<ClassFieldDesc> getJavaClassDesc(JavaClass javaClass);
+    List<ClassDesc> getJavaClassDescForResponer(JavaClass javaClass);
 
     /**
      * 根据解析器的数据类型，匹配文档的数据类型
@@ -74,4 +75,11 @@ public interface ClassService {
      * @return
      */
      boolean isInterfactClass(JavaClass javaClass);
+
+    /**
+     * 获取类的解释，为请求头的参数设定
+     * @param parameter
+     * @return
+     */
+    List<ClassFieldDesc> getFieldDescForHeadParameter(JavaClass clazz);
 }

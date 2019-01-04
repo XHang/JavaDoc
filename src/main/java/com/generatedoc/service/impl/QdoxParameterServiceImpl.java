@@ -30,7 +30,7 @@ public class QdoxParameterServiceImpl implements ParameterService {
         List<HeadParameterDesc> result = new ArrayList<>();
 
         if (isInnerParameter(parameter)){
-            List<ClassFieldDesc> list = classService.getJavaClassDesc(parameter);
+            List<ClassFieldDesc> list = classService.getFieldDescForHeadParameter(parameter.getJavaClass());
             for (ClassFieldDesc classFieldDesc : list) {
                 HeadParameterDesc desc = converClassFieldDesc(classFieldDesc);
                 result.add(desc);
@@ -71,16 +71,8 @@ public class QdoxParameterServiceImpl implements ParameterService {
     @Override
     public List<ClassDesc> bodyParameterToDoc(JavaParameter parameter, JavaMethod javaMethod) {
         try {
-            List<ClassFieldDesc> parameterDescs = classService.getJavaClassDesc(parameter);
-            List<HeadParameterDesc> result = new ArrayList<>();
-            if (CollectionUtils.isEmpty(parameterDescs)){
-                return result;
-            }
-            for (ClassFieldDesc parameterDesc : parameterDescs) {
-                HeadParameterDesc desc = converClassFieldDesc(parameterDesc);
-                result.add(desc);
-            }
-            return result;
+            List<ClassDesc> parameterDescs = classService.getJavaClassDescForBodyParameter(parameter);
+            return parameterDescs;
         } catch (Exception e) {
             throw new DOCError("抽取请求体参数信息失败",e);
         }

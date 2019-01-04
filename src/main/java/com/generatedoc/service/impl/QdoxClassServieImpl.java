@@ -6,9 +6,9 @@ import com.generatedoc.constant.ValidConstant;
 import com.generatedoc.context.ClassContext;
 import com.generatedoc.emnu.DataType;
 import com.generatedoc.emnu.RuleType;
+import com.generatedoc.entity.ClassDesc;
 import com.generatedoc.entity.ClassFieldDesc;
 import com.generatedoc.entity.FieldRule;
-import com.generatedoc.exception.DOCError;
 import com.generatedoc.service.ClassService;
 import com.generatedoc.service.ControllerService;
 import com.generatedoc.util.AnnotationUtil;
@@ -16,19 +16,14 @@ import com.generatedoc.util.ArraysUtil;
 import com.generatedoc.util.StringUtil;
 import com.thoughtworks.qdox.model.*;
 import com.thoughtworks.qdox.model.impl.DefaultJavaParameterizedType;
-import com.thoughtworks.qdox.model.impl.JavaClassParent;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 
-import javax.xml.crypto.Data;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 public class QdoxClassServieImpl implements ClassService {
@@ -41,9 +36,9 @@ public class QdoxClassServieImpl implements ClassService {
      ApplicationConfig config;
 
     @Override
-    public List<ClassFieldDesc> getJavaClassDesc( JavaParameter parameter) {
+    public List<ClassDesc> getJavaClassDescForBodyParameter(JavaParameter parameter) {
         JavaClass clazz = parameter.getJavaClass();
-        List<ClassFieldDesc> result = new ArrayList<>();
+        List<ClassDesc> result = new ArrayList<>();
         getJavaClassDesc(clazz,result,isLimitParameter(parameter),"",new ArrayList<>());
         return result;
     }
@@ -54,8 +49,8 @@ public class QdoxClassServieImpl implements ClassService {
      * @return
      */
     @Override
-    public List<ClassFieldDesc> getJavaClassDesc( JavaClass javaClass) {
-        List<ClassFieldDesc> result = new ArrayList<>();
+    public List<ClassDesc> getJavaClassDescForResponer(JavaClass javaClass) {
+        List<ClassDesc> result = new ArrayList<>();
         getJavaClassDesc(javaClass,result,false,"",new ArrayList<>());
         return result;
     }
@@ -64,7 +59,15 @@ public class QdoxClassServieImpl implements ClassService {
 
     }
 
-    public void getJavaClassDescForBodyParameter( JavaClass clazz,List<ClassFieldDesc> container,boolean isLimit,String groupName,List<JavaClass> aleradyResolve) {
+    /**
+     * 获取类描述
+     * @param clazz 需描述的类
+     * @param container 存放结果的容器
+     * @param isLimit 是否生成类字段限制
+     * @param groupName 限制组
+     * @param aleradyResolve 以生成描述的类
+     */
+    public void getJavaClassDesc(JavaClass clazz, List<ClassDesc> container, boolean isLimit, String groupName, List<JavaClass> aleradyResolve) {
         //TODO Rule的分组需要加
         //TODO 小心json的别名！
         clazz = getRealClass(clazz);
@@ -72,19 +75,19 @@ public class QdoxClassServieImpl implements ClassService {
             return;
         }
         aleradyResolve.add(clazz);
+        ClassDesc classDesc = new ClassDesc();
+        classDesc.setClassDesc(clazz.getComment());
         log.debug("开始抽取类{}的字段信息",clazz.getName());
         List<JavaField> fields =  clazz.getFields();
-        //List<ClassFieldDesc> result = new ArrayList<>();
+        List<ClassFieldDesc> fieldDescList = new ArrayList<>();
+        classDesc.setClassFieldDescs(fieldDescList);
         for (JavaField field : fields) {
             if (!isMemberVar(field)){
                 log.debug("字段{}非成员变量，跳过解析",field.getName());
                 continue;
             }
             log.debug("开始遍历类{}的字段{}",clazz.getName(),field.getName());
-            ClassFieldDesc desc = new ClassFieldDesc();
-            desc.setDataType(getDataType(field.getType()));
-            desc.setParameterDesc(getParameterDesc(field,clazz));
-            desc.setParameterName(field.getName());
+           ClassFieldDesc desc =  getFieldDesc(field);
             //如果需要描述字段的限制规则
             if (isLimit){
                 List<FieldRule> rule = getRule(field);
@@ -98,11 +101,18 @@ public class QdoxClassServieImpl implements ClassService {
             if ((innerClass = getCollectionBean(field))!=null ){
                 getJavaClassDesc(innerClass,container,isLimit,groupName,aleradyResolve);
             }
-            container.add(desc);
+            fieldDescList.add(desc);
         }
         if (isNeedGetSuperClassDesc(clazz)){
             getJavaClassDesc(clazz.getSuperJavaClass(),container,isLimit,groupName,aleradyResolve);
         }
+    }
+    private ClassFieldDesc getFieldDesc(JavaField field){
+        ClassFieldDesc desc = new ClassFieldDesc();
+        desc.setDataType(getDataType(field.getType()));
+        desc.setParameterDesc(getParameterDesc(field));
+        desc.setParameterName(field.getName());
+        return desc;
     }
 
     private boolean isAleradyResolve(JavaClass clazz, List<JavaClass> aleradyResolve) {
@@ -324,7 +334,7 @@ public class QdoxClassServieImpl implements ClassService {
                 ||  AnnotationUtil.isExistAnnotation("NotEmpty",annotations);
     }
 
-    public String getParameterDesc(JavaField field, JavaClass clazz) {
+    public String getParameterDesc(JavaField field) {
        String fieldDesc =  field.getComment();
        log.debug("字段名{}的描述是{}",field.getName(),fieldDesc);
         return fieldDesc;
@@ -401,6 +411,50 @@ public class QdoxClassServieImpl implements ClassService {
         }
         logger.debug("该类没有关键注解,故不是控制器类",javaClass.getName());
         return false;
+    }
+
+    @Override
+    public List<ClassFieldDesc> getFieldDescForHeadParameter(JavaClass clazz){
+        List<ClassFieldDesc> result = new ArrayList<>();
+        getFieldDescForHeadParameter(clazz,result,new ArrayList<>(),"");
+        return result;
+    }
+
+    /**
+     * 获取类属性解释，为请求头参数设定
+     * @param clazz 所需的类
+     * @param container 容器
+     * @param aleradyResolve 已解析的类
+     * @param prefix 字段名前缀
+     */
+    public void getFieldDescForHeadParameter(JavaClass clazz,List<ClassFieldDesc> container,List<JavaClass> aleradyResolve,String prefix) {
+        clazz = getRealClass(clazz);
+        if (isAleradyResolve(clazz,aleradyResolve)){
+            return;
+        }
+        aleradyResolve.add(clazz);
+        ClassDesc classDesc = new ClassDesc();
+        classDesc.setClassDesc(clazz.getComment());
+        log.debug("开始抽取类{}的字段信息",clazz.getName());
+        List<JavaField> fields =  clazz.getFields();
+        List<ClassFieldDesc> fieldDescList = new ArrayList<>();
+        classDesc.setClassFieldDescs(fieldDescList);
+        for (JavaField field : fields) {
+            if (!isMemberVar(field)){
+                log.debug("字段{}非成员变量，跳过解析",field.getName());
+                continue;
+            }
+            log.debug("开始遍历类{}的字段{}",clazz.getName(),field.getName());
+            ClassFieldDesc desc = new ClassFieldDesc();
+            desc.setDataType(getDataType(field.getType()));
+            desc.setParameterDesc(getParameterDesc(field));
+            desc.setParameterName(prefix+field.getName());
+            //如果当前遍历的字段是非基本类型，也就是说，是Bean
+            if (isBean(field.getType())){
+                //TODO Spring MVC 下面的这个请求头怎么弄来着？
+                getFieldDescForHeadParameter(field.getType(),container,aleradyResolve,field.getName()+".");
+            }
+        }
     }
 
     private boolean isBean(JavaClass javaClass){

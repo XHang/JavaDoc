@@ -2,6 +2,7 @@ package com.generatedoc.service;
 
 import com.generatedoc.emnu.RequestType;
 import com.generatedoc.entity.ApiInterface;
+import com.generatedoc.entity.ClassDesc;
 import com.generatedoc.entity.ReturnFieldDesc;
 import com.thoughtworks.qdox.model.JavaMethod;
 import org.apache.commons.collections4.CollectionUtils;
@@ -22,8 +23,8 @@ public interface MethodService {
         apiInterface.setRequestType(getRequestType(javaMethod));
         apiInterface.setUrl(getUrl(javaMethod));
         buildRequestDesc(javaMethod,apiInterface);
-        List<ReturnFieldDesc> descs = buildResponseDesc(javaMethod);
-        apiInterface.setReturnFieldDesc(descs);
+        List<ClassDesc> descs = buildResponseDesc(javaMethod);
+        apiInterface.setResponseDesc(descs);
         return apiInterface;
     }
 
@@ -32,7 +33,7 @@ public interface MethodService {
      * @param javaMethod
      * @return
      */
-    List<ReturnFieldDesc> buildResponseDesc(JavaMethod javaMethod);
+    List<ClassDesc> buildResponseDesc(JavaMethod javaMethod);
 
     /**
      * 抽取方法里面参数的解释
