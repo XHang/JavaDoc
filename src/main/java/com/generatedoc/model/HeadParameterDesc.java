@@ -1,8 +1,4 @@
-package com.generatedoc.entity;
-
-import com.generatedoc.emnu.DataType;
-import com.generatedoc.emnu.YesOrNo;
-
+package com.generatedoc.model;
 
 
 /**

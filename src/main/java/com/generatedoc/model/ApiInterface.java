@@ -1,4 +1,4 @@
-package com.generatedoc.entity;
+package com.generatedoc.model;
 
 import com.generatedoc.emnu.RequestType;
 
@@ -20,9 +20,9 @@ public class ApiInterface {
      */
     private String url;
     /**
-     * 请求体接口参数列表
+     * 请求体接口参数
      */
-    private List<ClassDesc> bodyParameters;
+    private ClassDesc bodyParameter;
 
     /**
      * 请求体接口参数列表
@@ -39,7 +39,7 @@ public class ApiInterface {
     /**
      * 接口返回值的解释
      */
-    private List<ClassDesc> responseDesc;
+    private ClassDesc responseDesc;
 
     /**
      * 返回值示例。
@@ -82,12 +82,12 @@ public class ApiInterface {
     }
 
 
-    public List<ClassDesc> getBodyParameters() {
-        return bodyParameters;
+    public ClassDesc getBodyParameter() {
+        return bodyParameter;
     }
 
-    public void setBodyParameters(List<ClassDesc> bodyParameters) {
-        this.bodyParameters = bodyParameters;
+    public void setBodyParameter(ClassDesc bodyParameter) {
+        this.bodyParameter = bodyParameter;
     }
 
     public String getParameterExample() {
@@ -106,11 +106,11 @@ public class ApiInterface {
         this.returnType = returnType;
     }
 
-    public List<ClassDesc> getResponseDesc() {
+    public ClassDesc getResponseDesc() {
         return responseDesc;
     }
 
-    public void setResponseDesc(List<ClassDesc> responseDesc) {
+    public void setResponseDesc(ClassDesc responseDesc) {
         this.responseDesc = responseDesc;
     }
 

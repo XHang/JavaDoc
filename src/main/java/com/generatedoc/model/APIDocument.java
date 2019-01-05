@@ -1,4 +1,4 @@
-package com.generatedoc.entity;
+package com.generatedoc.model;
 
 import java.time.LocalDateTime;
 import java.util.List;

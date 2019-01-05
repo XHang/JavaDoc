@@ -1,16 +1,9 @@
 package com.generatedoc.main;
 
-import com.generatedoc.constant.SpringMVCConstant;
-import com.generatedoc.entity.APIDocument;
-import com.generatedoc.entity.ApiInterface;
+import com.generatedoc.model.APIDocument;
+import com.generatedoc.model.ApiInterface;
 import com.generatedoc.filter.JavaFileFilter;
 import com.generatedoc.service.*;
-import com.generatedoc.util.AnnotationUtil;
-import com.generatedoc.util.FileUtil;
-import com.generatedoc.util.IOUtil;
-import com.generatedoc.util.StringUtil;
-import com.thoughtworks.qdox.model.DocletTag;
-import com.thoughtworks.qdox.model.JavaAnnotation;
 import com.thoughtworks.qdox.model.JavaClass;
 import com.thoughtworks.qdox.model.JavaMethod;
 import org.apache.commons.collections4.CollectionUtils;
@@ -22,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
-import java.time.LocalDateTime;
 import java.util.*;
 
 /**

@@ -1,8 +1,8 @@
 package com.generatedoc.service.impl;
 
 import com.generatedoc.constant.MappingConstant;
-import com.generatedoc.entity.APIDocument;
-import com.generatedoc.entity.ApiInterface;
+import com.generatedoc.model.APIDocument;
+import com.generatedoc.model.ApiInterface;
 import com.generatedoc.service.DocmentsService;
 import com.generatedoc.service.MarkDownDocMethodService;
 import com.generatedoc.util.IOUtil;

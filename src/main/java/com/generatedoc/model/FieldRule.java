@@ -1,4 +1,4 @@
-package com.generatedoc.entity;
+package com.generatedoc.model;
 
 import com.generatedoc.emnu.RuleType;
 
@@ -9,8 +9,6 @@ public class FieldRule {
 
     private RuleType ruleType;
     private String ruleValue;
-    private Long maxLength;
-    private Long minLength;
 
     public RuleType getRuleType() {
         return ruleType;
@@ -28,19 +26,7 @@ public class FieldRule {
         this.ruleValue = ruleValue;
     }
 
-    public Long getMaxLength() {
-        return maxLength;
-    }
 
-    public void setMaxLength(Long maxLength) {
-        this.maxLength = maxLength;
-    }
 
-    public Long getMinLength() {
-        return minLength;
-    }
 
-    public void setMinLength(Long minLength) {
-        this.minLength = minLength;
-    }
 }

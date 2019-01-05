@@ -2,11 +2,11 @@ package com.generatedoc.service.impl;
 
 import com.generatedoc.config.ApplicationConfig;
 import com.generatedoc.constant.SpringMVCConstant;
-import com.generatedoc.entity.ApiInterface;
+import com.generatedoc.model.ApiInterface;
+import com.generatedoc.service.ClassService;
 import com.generatedoc.service.ControllerService;
 import com.generatedoc.service.MethodService;
 import com.generatedoc.util.ArraysUtil;
-import com.generatedoc.util.StringUtil;
 import com.thoughtworks.qdox.model.DocletTag;
 import com.thoughtworks.qdox.model.JavaClass;
 import com.thoughtworks.qdox.model.JavaMethod;
@@ -24,6 +24,11 @@ public class ControllerServiceImpl implements ControllerService {
 
     @Autowired
     private ApplicationConfig config;
+
+    @Autowired
+    private ClassService classService;
+
+
 
     @Override
     public boolean isControlAnnotation(String annotatianName) {
@@ -76,19 +81,8 @@ public class ControllerServiceImpl implements ControllerService {
 
     @Override
     public String buildTitle(JavaClass javaClass) {
-        DocletTag docletTag  = javaClass.getTagByName("Title");
-        String title = "";
-        if (docletTag == null){
-            log.info("找不到该类{}的Title注释信息",javaClass.getName());
-            title =  javaClass.getComment();
-        }else{
-            title =  docletTag.getValue();
-        }
-        if (StringUtil.isEmpty(title)){
-            log.warn("类名{}找不到有效的接口文档描述，取类名为接口文档名");
-            title = javaClass.getName();
-        }
-        return title;
+        return classService.buildTitle(javaClass);
+
     }
 
     @Override

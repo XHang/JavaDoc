@@ -1,7 +1,6 @@
-package com.generatedoc.entity;
+package com.generatedoc.model;
 
 import com.generatedoc.emnu.DataType;
-import com.generatedoc.emnu.YesOrNo;
 
 import java.util.List;
 
@@ -55,5 +54,18 @@ public class ClassFieldDesc {
 
     public void setDataType(DataType dataType) {
         this.dataType = dataType;
+    }
+
+    /**
+     *嵌套实体类的字段描述
+     */
+    private ClassDesc nestingClssDesc;
+
+    public ClassDesc getNestingClssDesc() {
+        return nestingClssDesc;
+    }
+
+    public void setNestingClssDesc(ClassDesc nestingClssDesc) {
+        this.nestingClssDesc = nestingClssDesc;
     }
 }

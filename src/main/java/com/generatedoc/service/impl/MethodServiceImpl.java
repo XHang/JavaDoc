@@ -3,14 +3,13 @@ package com.generatedoc.service.impl;
 import com.generatedoc.config.ApplicationConfig;
 import com.generatedoc.constant.SpringMVCConstant;
 import com.generatedoc.emnu.RequestType;
-import com.generatedoc.entity.*;
+import com.generatedoc.model.*;
 import com.generatedoc.service.ClassService;
 import com.generatedoc.service.MethodService;
 import com.generatedoc.service.ParameterService;
 import com.generatedoc.util.AnnotationUtil;
 import com.generatedoc.util.StringUtil;
 import com.thoughtworks.qdox.model.*;
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,14 +43,14 @@ public class MethodServiceImpl implements MethodService {
         return desc;
     }
     @Override
-    public List<ClassDesc> buildResponseDesc(JavaMethod javaMethod) {
+    public ClassDesc buildResponseDesc(JavaMethod javaMethod) {
         try {
             if (!isResponseBody(javaMethod)){
                 //暂时只支持Json序列化
                 return null;
             }
-            List<ClassDesc> fieldDescs =classService.getJavaClassDescForResponer(javaMethod.getReturns());
-            return fieldDescs;
+            ClassDesc responerDesc=classService.getJavaClassDescForResponer(javaMethod.getReturns());
+            return responerDesc;
         } catch (Exception e) {
             log.error("处理返回值描述失败",e);
             return null;
@@ -178,21 +177,20 @@ public class MethodServiceImpl implements MethodService {
         if (CollectionUtils.isEmpty(parameters)){
             return ;
         }
-        List<ClassDesc> bodyParameterDesc = new ArrayList<>();
+        ClassDesc bodyParameterDesc = null;
         List<HeadParameterDesc> headParameterDesc = new ArrayList<>();
         for (JavaParameter parameter : parameters) {
             if (!isRequestParameter(parameter)){
                 continue;
             }
             if (parameterService.isBodyParameter(parameter)){
-                List<ClassDesc> descs = parameterService.bodyParameterToDoc(parameter,javaMethod);
-                bodyParameterDesc.addAll(descs);
+                bodyParameterDesc = parameterService.bodyParameterToDoc(parameter,javaMethod);
             }else{
                 List<HeadParameterDesc> descs = parameterService.headerParameterToDoc(parameter,javaMethod);
                 headParameterDesc.addAll(descs);
             }
         }
-        apiInterface.setBodyParameters(bodyParameterDesc);
+        apiInterface.setBodyParameter(bodyParameterDesc);
         apiInterface.setHeaderParameters(headParameterDesc);
     }
 

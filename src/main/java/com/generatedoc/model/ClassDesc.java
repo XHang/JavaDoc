@@ -1,4 +1,4 @@
-package com.generatedoc.entity;
+package com.generatedoc.model;
 
 import java.util.List;
 

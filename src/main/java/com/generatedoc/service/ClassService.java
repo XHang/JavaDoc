@@ -1,8 +1,8 @@
 package com.generatedoc.service;
 
 import com.generatedoc.emnu.DataType;
-import com.generatedoc.entity.ClassDesc;
-import com.generatedoc.entity.ClassFieldDesc;
+import com.generatedoc.model.ClassDesc;
+import com.generatedoc.model.ClassFieldDesc;
 import com.generatedoc.exception.DOCError;
 import com.thoughtworks.qdox.JavaProjectBuilder;
 import com.thoughtworks.qdox.model.JavaClass;
@@ -24,14 +24,14 @@ public interface ClassService {
      * @param parameter
      * @return
      */
-    List<ClassDesc> getJavaClassDescForBodyParameter(JavaParameter parameter);
+    ClassDesc getJavaClassDescForBodyParameter(JavaParameter parameter);
 
     /**
      * 获取类的类属性描述
      * @param javaClass
      * @return
      */
-    List<ClassDesc> getJavaClassDescForResponer(JavaClass javaClass);
+    ClassDesc getJavaClassDescForResponer(JavaClass javaClass);
 
     /**
      * 根据解析器的数据类型，匹配文档的数据类型
@@ -82,4 +82,6 @@ public interface ClassService {
      * @return
      */
     List<ClassFieldDesc> getFieldDescForHeadParameter(JavaClass clazz);
+
+    String buildTitle(JavaClass javaClass);
 }

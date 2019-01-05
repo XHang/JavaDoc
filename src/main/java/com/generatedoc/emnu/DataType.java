@@ -1,5 +1,7 @@
 package com.generatedoc.emnu;
 
+import java.sql.Time;
+
 public enum DataType {
     STRING("字符串"),
     NUMBER("数字"),

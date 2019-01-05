@@ -1,11 +1,9 @@
 package com.generatedoc.util;
 
 import com.generatedoc.common.SymbolConstant;
-import com.generatedoc.entity.MarkDownTableDto;
+import com.generatedoc.model.MarkDownTableDto;
 import com.generatedoc.exception.MarkDownException;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 /**

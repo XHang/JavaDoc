@@ -1,10 +1,8 @@
 package com.generatedoc.util;
 
 import com.generatedoc.emnu.RequestType;
-import com.generatedoc.entity.ApiInterface;
-import com.generatedoc.entity.MarkDownTableDto;
-import org.apache.logging.log4j.core.util.JsonUtils;
-import org.junit.Test;
+import com.generatedoc.model.ApiInterface;
+import com.generatedoc.model.MarkDownTableDto;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;

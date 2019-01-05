@@ -1,6 +1,4 @@
-package com.generatedoc.entity;
-
-import com.generatedoc.emnu.DataType;
+package com.generatedoc.model;
 
 /**
  * 响应的字段解释实体类

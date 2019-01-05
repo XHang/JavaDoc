@@ -1,9 +1,9 @@
 package com.generatedoc.service.impl;
 
 import com.generatedoc.emnu.DataType;
-import com.generatedoc.entity.ClassDesc;
-import com.generatedoc.entity.ClassFieldDesc;
-import com.generatedoc.entity.HeadParameterDesc;
+import com.generatedoc.model.ClassDesc;
+import com.generatedoc.model.ClassFieldDesc;
+import com.generatedoc.model.HeadParameterDesc;
 import com.generatedoc.exception.DOCError;
 import com.generatedoc.service.ClassService;
 import com.generatedoc.service.ParameterService;
@@ -69,10 +69,10 @@ public class QdoxParameterServiceImpl implements ParameterService {
 
 
     @Override
-    public List<ClassDesc> bodyParameterToDoc(JavaParameter parameter, JavaMethod javaMethod) {
+    public ClassDesc bodyParameterToDoc(JavaParameter parameter, JavaMethod javaMethod) {
         try {
-            List<ClassDesc> parameterDescs = classService.getJavaClassDescForBodyParameter(parameter);
-            return parameterDescs;
+           ClassDesc classDesc = classService.getJavaClassDescForBodyParameter(parameter);
+            return classDesc;
         } catch (Exception e) {
             throw new DOCError("抽取请求体参数信息失败",e);
         }

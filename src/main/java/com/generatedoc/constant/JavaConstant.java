@@ -10,11 +10,18 @@ public class JavaConstant {
      */
     public static final List<String> OWN_TYPE = new ArrayList<>();
 
-    public static  final String LIST_TPYE = "List";
 
     public static  final String STRING_TPYE = "String";
 
     public static final List<String> NUMBER_TYPES = new ArrayList<>();
+
+    public static final List<String> COLLECTION_TYPES = new ArrayList<>();
+
+    static {
+        COLLECTION_TYPES.add("List");
+        COLLECTION_TYPES.add("Set");
+        COLLECTION_TYPES.add("ArrayList");
+    }
 
     static {
         NUMBER_TYPES.add("Integer");
@@ -29,9 +36,11 @@ public class JavaConstant {
         OWN_TYPE.add(STRING_TPYE);
         OWN_TYPE.add("Boolean");
         OWN_TYPE.add("Map");
-        OWN_TYPE.add(LIST_TPYE);
+        OWN_TYPE.addAll(COLLECTION_TYPES);
         OWN_TYPE.addAll(NUMBER_TYPES);
         OWN_TYPE.add("Object");
         OWN_TYPE.add("Date");
+        OWN_TYPE.add("Timestamp");
+        OWN_TYPE.add("LocalDate");
     }
 }

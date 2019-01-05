@@ -1,6 +1,6 @@
 package com.generatedoc.service;
 
-import com.generatedoc.entity.APIDocument;
+import com.generatedoc.model.APIDocument;
 
 public interface DocmentsService {
     void saveDoc(APIDocument apiDocument, String descPath);

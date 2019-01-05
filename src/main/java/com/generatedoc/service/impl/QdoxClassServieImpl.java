@@ -6,9 +6,9 @@ import com.generatedoc.constant.ValidConstant;
 import com.generatedoc.context.ClassContext;
 import com.generatedoc.emnu.DataType;
 import com.generatedoc.emnu.RuleType;
-import com.generatedoc.entity.ClassDesc;
-import com.generatedoc.entity.ClassFieldDesc;
-import com.generatedoc.entity.FieldRule;
+import com.generatedoc.model.ClassDesc;
+import com.generatedoc.model.ClassFieldDesc;
+import com.generatedoc.model.FieldRule;
 import com.generatedoc.service.ClassService;
 import com.generatedoc.service.ControllerService;
 import com.generatedoc.util.AnnotationUtil;
@@ -36,11 +36,21 @@ public class QdoxClassServieImpl implements ClassService {
      ApplicationConfig config;
 
     @Override
-    public List<ClassDesc> getJavaClassDescForBodyParameter(JavaParameter parameter) {
+    public ClassDesc getJavaClassDescForBodyParameter(JavaParameter parameter) {
         JavaClass clazz = parameter.getJavaClass();
-        List<ClassDesc> result = new ArrayList<>();
-        getJavaClassDesc(clazz,result,isLimitParameter(parameter),"",new ArrayList<>());
-        return result;
+        ClassDesc bodyParameterDesc = new ClassDesc();
+        bodyParameterDesc.setClassDesc(null);
+        List<ClassFieldDesc> fieldDescList = getJavaClassDesc(clazz,isLimitParameter(parameter),getGroupName(parameter),new ArrayList<>());
+        bodyParameterDesc.setClassFieldDescs(fieldDescList);
+        return bodyParameterDesc;
+    }
+    private  List<String> getGroupName(JavaParameter parameter){
+        JavaAnnotation annotation = AnnotationUtil.getAnnotationByName(ValidConstant.VALID_ANNOUATION,parameter.getAnnotations());
+        if (annotation == null) {
+            return null;
+        }
+       List<String> groups = (List<String>) annotation.getNamedParameter("value");
+        return groups;
     }
 
     /**
@@ -49,10 +59,12 @@ public class QdoxClassServieImpl implements ClassService {
      * @return
      */
     @Override
-    public List<ClassDesc> getJavaClassDescForResponer(JavaClass javaClass) {
-        List<ClassDesc> result = new ArrayList<>();
-        getJavaClassDesc(javaClass,result,false,"",new ArrayList<>());
-        return result;
+    public ClassDesc getJavaClassDescForResponer(JavaClass javaClass) {
+        ClassDesc classDesc = new ClassDesc();
+        classDesc.setClassDesc(null);
+        List<ClassFieldDesc> fieldDescList = getJavaClassDesc(javaClass,false,new ArrayList<>(),new ArrayList<>());
+        classDesc.setClassFieldDescs(fieldDescList);
+        return classDesc;
     }
 
     public void getJavaClassDescForHeadParameter(JavaClass clazz,List<ClassFieldDesc> container,List<JavaClass> aleradyResolve){
@@ -60,27 +72,23 @@ public class QdoxClassServieImpl implements ClassService {
     }
 
     /**
-     * 获取类描述
+     * 获取类字段描述
      * @param clazz 需描述的类
-     * @param container 存放结果的容器
      * @param isLimit 是否生成类字段限制
-     * @param groupName 限制组
+     * @param groupNames 限制组
      * @param aleradyResolve 以生成描述的类
      */
-    public void getJavaClassDesc(JavaClass clazz, List<ClassDesc> container, boolean isLimit, String groupName, List<JavaClass> aleradyResolve) {
+    public List<ClassFieldDesc> getJavaClassDesc(JavaClass clazz, boolean isLimit, List<String> groupNames, List<JavaClass> aleradyResolve) {
         //TODO Rule的分组需要加
         //TODO 小心json的别名！
         clazz = getRealClass(clazz);
         if (isAleradyResolve(clazz,aleradyResolve)){
-            return;
+            return null;
         }
         aleradyResolve.add(clazz);
-        ClassDesc classDesc = new ClassDesc();
-        classDesc.setClassDesc(clazz.getComment());
         log.debug("开始抽取类{}的字段信息",clazz.getName());
         List<JavaField> fields =  clazz.getFields();
         List<ClassFieldDesc> fieldDescList = new ArrayList<>();
-        classDesc.setClassFieldDescs(fieldDescList);
         for (JavaField field : fields) {
             if (!isMemberVar(field)){
                 log.debug("字段{}非成员变量，跳过解析",field.getName());
@@ -90,22 +98,32 @@ public class QdoxClassServieImpl implements ClassService {
            ClassFieldDesc desc =  getFieldDesc(field);
             //如果需要描述字段的限制规则
             if (isLimit){
-                List<FieldRule> rule = getRule(field);
+                List<FieldRule> rule = getRule(field,groupNames);
                 desc.setFieldRule(rule);
             }
             //如果当前遍历的字段是非基本类型，也就是说，是Bean
             if (isBean(field.getType())){
-                getJavaClassDesc(field.getType(),container,isLimit,groupName,aleradyResolve);
+                ClassDesc nestingBean = new ClassDesc();
+                nestingBean.setClassDesc(field.getName());
+                List<ClassFieldDesc> fieldDescs = getJavaClassDesc(field.getType(),isLimit,groupNames,aleradyResolve);
+                nestingBean.setClassFieldDescs(fieldDescs);
+                desc.setNestingClssDesc(nestingBean);
             }
             JavaClass innerClass = null;
             if ((innerClass = getCollectionBean(field))!=null ){
-                getJavaClassDesc(innerClass,container,isLimit,groupName,aleradyResolve);
+                ClassDesc nestingBean = new ClassDesc();
+                nestingBean.setClassDesc(field.getName());
+                List<ClassFieldDesc> fieldDescs = getJavaClassDesc(innerClass,isLimit,groupNames,aleradyResolve);
+                nestingBean.setClassFieldDescs(fieldDescs);
+                desc.setNestingClssDesc(nestingBean);
             }
             fieldDescList.add(desc);
         }
         if (isNeedGetSuperClassDesc(clazz)){
-            getJavaClassDesc(clazz.getSuperJavaClass(),container,isLimit,groupName,aleradyResolve);
+            List<ClassFieldDesc> superBeanField = getJavaClassDesc(clazz.getSuperJavaClass(),isLimit,groupNames,aleradyResolve);
+            fieldDescList.addAll(superBeanField);
         }
+        return fieldDescList;
     }
     private ClassFieldDesc getFieldDesc(JavaField field){
         ClassFieldDesc desc = new ClassFieldDesc();
@@ -148,7 +166,7 @@ public class QdoxClassServieImpl implements ClassService {
      */
     private JavaClass getCollectionBean(JavaField field) {
         JavaClass javaClass = field.getType();
-        if (JavaConstant.LIST_TPYE.equals(field.getType().getName())){
+        if (JavaConstant.COLLECTION_TYPES.contains(field.getType().getName())){
             DefaultJavaParameterizedType type = (DefaultJavaParameterizedType) javaClass;
             List<JavaType> types =  type.getActualTypeArguments();
             if (!CollectionUtils.isEmpty(types)){
@@ -254,32 +272,31 @@ public class QdoxClassServieImpl implements ClassService {
         return null;
     }
 
-    private List<FieldRule> getRule(JavaField field) {
+    private List<FieldRule> getRule(JavaField field, List<String> groupNames) {
         List<FieldRule> result = new ArrayList<>();
         List<JavaAnnotation> annotations = field.getAnnotations();
-        //TODO 需要考虑group的可能性
-        FieldRule fieldRule = buildRequired(annotations);
+        FieldRule fieldRule = buildRequired(annotations,groupNames);
         if (fieldRule != null) {
             result.add(fieldRule);
         }
-
-         fieldRule = buildMaxLimit(annotations);
+         fieldRule = buildMaxLimit(annotations,groupNames);
         if (fieldRule != null) {
             result.add(fieldRule);
         }
-        fieldRule = buildMinLimit(annotations);
+        fieldRule = buildMinLimit(annotations,groupNames);
         if (fieldRule != null) {
             result.add(fieldRule);
         }
-        fieldRule = buildReg(annotations);
+        fieldRule = buildReg(annotations,groupNames);
         if (fieldRule != null) {
             result.add(fieldRule);
         }
         return result;
     }
 
-    private FieldRule buildRequired(List<JavaAnnotation> annotations) {
-        if (isRequired(annotations)){
+    private FieldRule buildRequired(List<JavaAnnotation> annotations, List<String> groupNames) {
+        JavaAnnotation annotation = getRequiredAnnotation(annotations);
+        if (annotation!=null && isMatch(annotation,groupNames)){
             FieldRule rule = new FieldRule();
             rule.setRuleType(RuleType.NOT_NULL);
             return rule;
@@ -287,10 +304,29 @@ public class QdoxClassServieImpl implements ClassService {
             return null;
         }
     }
+    private boolean isMatch(JavaAnnotation annotation,List<String> groupNames){
+        if (CollectionUtils.isEmpty(groupNames)){
+            return true;
+        }
+        List<String> groups = (List<String>) annotation.getNamedParameter("groups");
+        if (CollectionUtils.isEmpty(groups)){
+            return true;
+        }
+        for (String group : groups) {
+            String fieldGroupName = AnnotationUtil.getSimpleClassName(group);
+            for (String groupName : groupNames) {
+                String parameterGroupName = AnnotationUtil.getSimpleClassName(group);
+                if (fieldGroupName.equals(parameterGroupName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
-    private FieldRule buildReg(List<JavaAnnotation> annotations) {
+    private FieldRule buildReg(List<JavaAnnotation> annotations, List<String> groupNames) {
         JavaAnnotation annotation = AnnotationUtil.getAnnotationByName(ValidConstant.REG,annotations);
-        if (annotation == null){
+        if (annotation == null || !isMatch(annotation,groupNames)){
             return null;
         }
         FieldRule fieldRule = new FieldRule();
@@ -299,26 +335,31 @@ public class QdoxClassServieImpl implements ClassService {
         return fieldRule;
     }
 
-    private FieldRule buildMaxLimit(List<JavaAnnotation> annotations) {
+    private FieldRule buildMaxLimit(List<JavaAnnotation> annotations, List<String> groupNames) {
         JavaAnnotation annotation = AnnotationUtil.getAnnotationByName(ValidConstant.MAX_LIMIT,annotations);
-        if (annotation == null){
+        if (annotation == null || !isMatch(annotation,groupNames)){
             return null;
         }
         FieldRule rule = new FieldRule();
-        Long value  = Long.valueOf(annotation.getNamedParameter(ValidConstant.LENGTH_VALUE)+"");
-        rule.setMaxLength(value);
+        String value  = annotation.getNamedParameter(ValidConstant.LENGTH_VALUE)+"";
+        if ("Integer.MAX_VALUE".equals(value)){
+            value = "0x7fffffff";
+        }else if ("Integer.MIN_VALUE" .equals(value)) {
+            value = "0x80000000";
+        }
+        rule.setRuleValue(value);
         rule.setRuleType(RuleType.MAX_LENGTH_LIMIT);
         return rule;
     }
 
-    private FieldRule buildMinLimit(List<JavaAnnotation> annotations) {
+    private FieldRule buildMinLimit(List<JavaAnnotation> annotations, List<String> groupNames) {
         JavaAnnotation annotation = AnnotationUtil.getAnnotationByName(ValidConstant.MIN_LIMIT,annotations);
-        if (annotation == null){
+        if (annotation == null || !isMatch(annotation,groupNames)){
             return null;
         }
         FieldRule rule = new FieldRule();
         Long value  = Long.valueOf(annotation.getNamedParameter(ValidConstant.LENGTH_VALUE)+"");
-        rule.setMinLength(value);
+        rule.setRuleValue(value+"");
         rule.setRuleType(RuleType.MIN_LENGTH_LIMIT);
         return rule;
     }
@@ -328,10 +369,20 @@ public class QdoxClassServieImpl implements ClassService {
                 AnnotationUtil.isExistAnnotation(ValidConstant.MIN_LIMIT,annotations);
     }
 
-    private boolean isRequired(List<JavaAnnotation> annotations) {
-        return AnnotationUtil.isExistAnnotation("NotNull",annotations)
-                || AnnotationUtil.isExistAnnotation("NotBlank",annotations)
-                ||  AnnotationUtil.isExistAnnotation("NotEmpty",annotations);
+    private JavaAnnotation getRequiredAnnotation(List<JavaAnnotation> annotations) {
+        JavaAnnotation annotation =  AnnotationUtil.getAnnotationByName("NotNull",annotations);
+        if (annotation != null) {
+            return annotation;
+        }
+         annotation =  AnnotationUtil.getAnnotationByName("NotBlank",annotations);
+        if (annotation != null) {
+            return annotation;
+        }
+         annotation =  AnnotationUtil.getAnnotationByName("NotEmpty",annotations);
+        if (annotation != null) {
+            return annotation;
+        }
+        return null;
     }
 
     public String getParameterDesc(JavaField field) {
@@ -348,7 +399,7 @@ public class QdoxClassServieImpl implements ClassService {
         if (JavaConstant.STRING_TPYE.equals(className)){
             return DataType.STRING;
         }
-        if (JavaConstant.LIST_TPYE.equals(className)){
+        if (JavaConstant.COLLECTION_TYPES.contains(className)){
             return DataType.ARRAY;
         }
         return DataType.OBJECT;
@@ -421,6 +472,28 @@ public class QdoxClassServieImpl implements ClassService {
     }
 
     /**
+     * 获取类的描述，作为标题
+     * @param javaClass
+     * @return
+     */
+    @Override
+    public String buildTitle(JavaClass javaClass) {
+        DocletTag docletTag  = javaClass.getTagByName("Title");
+        String title = "";
+        if (docletTag == null){
+            log.info("找不到该类{}的Title注释信息",javaClass.getName());
+            title =  javaClass.getComment();
+        }else{
+            title =  docletTag.getValue();
+        }
+        if (StringUtil.isEmpty(title)){
+            log.warn("类名{}找不到有效的接口文档描述，取类名为标题");
+            title = javaClass.getName();
+        }
+        return title;
+    }
+
+    /**
      * 获取类属性解释，为请求头参数设定
      * @param clazz 所需的类
      * @param container 容器
@@ -470,6 +543,6 @@ public class QdoxClassServieImpl implements ClassService {
 
     private boolean isLimitParameter(JavaParameter parameter) {
         List<JavaAnnotation> annotations = parameter.getAnnotations();
-        return AnnotationUtil.isExistAnnotation("@Validated",annotations);
+        return AnnotationUtil.isExistAnnotation(ValidConstant.VALID_ANNOUATION,annotations);
     }
 }

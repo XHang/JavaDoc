@@ -1,7 +1,7 @@
 package com.generatedoc.service;
 
-import com.generatedoc.entity.APIDocument;
-import com.generatedoc.entity.ApiInterface;
+import com.generatedoc.model.APIDocument;
+import com.generatedoc.model.ApiInterface;
 import com.thoughtworks.qdox.model.JavaClass;
 import com.thoughtworks.qdox.model.JavaMethod;
 import org.slf4j.Logger;
@@ -16,6 +16,8 @@ public interface ControllerService {
      public static final Logger log = LoggerFactory.getLogger(ControllerService.class);
 
     boolean isControlAnnotation(String annotatianName);
+
+
 
     /**
      * 根据JavaClass，生成api文档

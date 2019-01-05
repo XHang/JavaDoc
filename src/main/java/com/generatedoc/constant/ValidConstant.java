@@ -9,4 +9,5 @@ public interface ValidConstant {
     public static final String LENGTH_VALUE = "value";
     public static final String REG = "Pattern";
     public static final String REG_VALUE = "regexp";
+    public static final String VALID_ANNOUATION = "Validated";
 }

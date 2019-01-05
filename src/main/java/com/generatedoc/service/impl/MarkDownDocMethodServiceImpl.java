@@ -2,7 +2,7 @@ package com.generatedoc.service.impl;
 
 import com.generatedoc.constant.MappingConstant;
 import com.generatedoc.emnu.RequestType;
-import com.generatedoc.entity.*;
+import com.generatedoc.model.*;
 import com.generatedoc.service.MarkDownDocMethodService;
 import com.generatedoc.util.DateUitl;
 import com.generatedoc.util.MarkdownUtil;
@@ -88,21 +88,37 @@ public class MarkDownDocMethodServiceImpl implements MarkDownDocMethodService {
     }
 
     private void buildResponseDesc(StringBuilder sb, ApiInterface apiInterface) {
-        List<ClassDesc> responseDescList = apiInterface.getResponseDesc();
-        if (CollectionUtils.isEmpty(responseDescList)){
+        ClassDesc classDesc = apiInterface.getResponseDesc();
+        if (classDesc == null){
             sb.append(MarkdownUtil.buildText("无"));
             return;
         }
-        for (ClassDesc responseDesc : responseDescList) {
-            sb.append(MarkdownUtil.buildBoldText(responseDesc.getClassDesc()+"字段解释"));
-            writeResponseFieldDesc(sb,responseDesc.getClassFieldDescs());
-        }
+        writeResponseBeanDesc(sb,classDesc);
+
     }
-    private void writeResponseFieldDesc(StringBuilder write,List<ClassFieldDesc> fields){
+    private void writeResponseBeanDesc(StringBuilder write,ClassDesc beanDesc){
+        if (CollectionUtils.isEmpty(beanDesc.getClassFieldDescs())) {
+            write.append(MarkdownUtil.buildText("暂无，可能需要重新生成"));
+            return;
+        }
+        List<ClassDesc> descList = writeResponseFieldDesc(write,beanDesc.getClassFieldDescs());
+        if (!CollectionUtils.isEmpty(descList)){
+            for (ClassDesc classDesc : descList) {
+                if (CollectionUtils.isEmpty(classDesc.getClassFieldDescs())) {
+                    continue;
+                }
+                write.append(MarkdownUtil.buildBoldText(classDesc+"字段解释"));
+                writeResponseBeanDesc(write,classDesc);
+            }
+        }
+
+    }
+    private ArrayList<ClassDesc> writeResponseFieldDesc(StringBuilder write,List<ClassFieldDesc> fields){
         List<String> column = new ArrayList<>();
         column.add("字段名");
         column.add("字段解释");
         column.add("字段类型");
+        ArrayList<ClassDesc> classDescs = new ArrayList<>();
         MarkDownTableDto dto = new MarkDownTableDto();
         dto.setColumns(column);
         List<List<String>> data = new ArrayList<>();
@@ -112,10 +128,14 @@ public class MarkDownDocMethodServiceImpl implements MarkDownDocMethodService {
             row.add(field.getParameterName());
             row.add(field.getParameterDesc());
             row.add(field.getDataType().getName());
+            if (field.getNestingClssDesc() != null) {
+                classDescs.add(field.getNestingClssDesc());
+            }
             data.add(row);
         }
         dto.setData(data);
         write.append(MarkdownUtil.buildTable(dto));
+        return classDescs;
     }
 
     private void buildRequestExample(StringBuilder sb, ApiInterface apiInterface) {
@@ -127,20 +147,32 @@ public class MarkDownDocMethodServiceImpl implements MarkDownDocMethodService {
     private void buildRequestArea(StringBuilder sb, ApiInterface apiInterface) {
         sb.append(MarkdownUtil.buildTitle(3,"参数说明"));
         buildHeadParameterDesc(sb, apiInterface.getHeaderParameters());
-        buildBodyParameterDesc(sb, apiInterface.getBodyParameters());
+        buildBodyParameterDesc(sb, apiInterface.getBodyParameter());
         buildRequestExample(sb,apiInterface);
     }
 
-    private void buildBodyParameterDesc(StringBuilder sb, List<ClassDesc> classDescList) {
-        sb.append(MarkdownUtil.buildBoldText("请求头参数"));
-        if (CollectionUtils.isEmpty(classDescList)){
+    private void buildBodyParameterDesc(StringBuilder sb, ClassDesc classDesc) {
+        sb.append(MarkdownUtil.buildBoldText("请求体参数"));
+        if (classDesc == null){
             sb.append(MarkdownUtil.buildText("无"));
             return;
         }
-        for (ClassDesc classDesc : classDescList) {
-            sb.append(MarkdownUtil.buildBoldText(classDesc.getClassDesc()+"字段解释"));
-            MarkDownTableDto dto = parameterDescToMarkDownTableDto(classDesc.getClassFieldDescs());
-        }
+        writerClassDesc(sb, classDesc);
+    }
+    private void writerClassDesc(StringBuilder write, ClassDesc desc){
+            if (CollectionUtils.isEmpty(desc.getClassFieldDescs())){
+                return;
+            }
+            List<ClassDesc> classDescList =  writeFieldDesc(desc.getClassFieldDescs(),write);
+            if (!CollectionUtils.isEmpty(classDescList)){
+                for (ClassDesc classDesc : classDescList) {
+                    if (CollectionUtils.isEmpty(classDesc.getClassFieldDescs())){
+                        continue;
+                    }
+                    write.append(MarkdownUtil.buildBoldText(classDesc.getClassDesc()+"字段解释"));
+                    writerClassDesc(write,classDesc);
+                }
+            }
     }
 
     private void buildHeadParameterDesc(StringBuilder sb, List<HeadParameterDesc> list){
@@ -149,14 +181,19 @@ public class MarkDownDocMethodServiceImpl implements MarkDownDocMethodService {
             sb.append(MarkdownUtil.buildText("无"));
             return;
         }
-        MarkDownTableDto dto = parameterDescToMarkDownTableDto(list);
-        sb.append(MarkdownUtil.buildTable(dto));
+         writeFieldDesc(list,sb);
     }
 
-    private MarkDownTableDto parameterDescToMarkDownTableDto(List<? extends  ClassFieldDesc> list) {
+    /**
+     * 将类字段写到接口文档里面
+     * @param list 类字段
+     * @param write 接口文档写入器
+     * @return List<ClassDesc> 嵌套Bean描述
+     */
+    private List<ClassDesc> writeFieldDesc(List<? extends  ClassFieldDesc> list, StringBuilder write) {
         MarkDownTableDto dto = new MarkDownTableDto();
         List<String> column =  new ArrayList<>();
-        List<List<String>> container = new ArrayList<>();
+        List<ClassDesc> nestingBean = new ArrayList<>();
         column.add("参数名");
         column.add("参数解释");
         column.add("参数类型");
@@ -168,14 +205,31 @@ public class MarkDownDocMethodServiceImpl implements MarkDownDocMethodService {
             row.add(desc.getParameterName());
             row.add(Optional.ofNullable(MarkdownUtil.escapeString(desc.getParameterDesc())).orElse(""));
             row.add(desc.getDataType().getName());
-            row.add("");
+            row.add(getRuleInfo(desc));
             data.add(row);
+            if (desc.getNestingClssDesc() != null) {
+                nestingBean.add(desc.getNestingClssDesc());
+            }
         }
         dto.setColumns(column);
         dto.setData(data);
-        return dto;
+        write.append(MarkdownUtil.buildTable(dto));
+        return nestingBean;
     }
 
+    private String getRuleInfo(ClassFieldDesc desc) {
+        List<FieldRule> rules = desc.getFieldRule();
+        if (CollectionUtils.isEmpty(rules)){
+            return "无";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < rules.size(); i++) {
+            FieldRule rule = rules.get(i);
+            sb.append(MarkdownUtil.buildSingleOrderItem(i,rule.getRuleType().getName()));
+            sb.append(MarkdownUtil.buildText("限制值："+MarkdownUtil.buildCodeLine(rule.getRuleValue())));
+        }
+        return sb.toString();
+    }
 
 
     private void buildTitle(ApiInterface apiInterface, StringBuilder sb, int index) {
