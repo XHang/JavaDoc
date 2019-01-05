@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.xml.crypto.Data;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -491,6 +492,79 @@ public class QdoxClassServieImpl implements ClassService {
             title = javaClass.getName();
         }
         return title;
+    }
+
+    @Override
+    public String toJsonString(ClassDesc classDesc) {
+       StringBuilder write = new StringBuilder();
+       DataType dataType = classDesc.getDataType();
+        if (dataType == null) {
+            log.warn("参数{}描述的的参数数据类型为空，生成Json示例参数失败");
+        }
+        if (dataType.equals(DataType.ARRAY)) {
+            writeArray(classDesc,write);
+        }else if (dataType.equals(DataType.OBJECT)){
+            writeField(classDesc.getClassFieldDescs(),write);
+        }
+        return write.toString();
+    }
+    private void  writeArray(ClassDesc desc,StringBuilder write){
+        write.append("[");
+            writeField(desc.getClassFieldDescs(),write);
+        write.append("]");
+    }
+    private void writeField(List<ClassFieldDesc> fieldDescList,StringBuilder write){
+        write.append("{");
+            if (!CollectionUtils.isEmpty(fieldDescList)){
+                for (ClassFieldDesc classFieldDesc : fieldDescList) {
+                    writeKey(classFieldDesc,write);
+                    writeValue(classFieldDesc,write);
+                }
+                //删除最后的逗号
+                write.deleteCharAt(write.length()-1);
+            }
+        write.append("}");
+    }
+
+    private void writeValue(ClassFieldDesc classFieldDesc, StringBuilder write) {
+        DataType dataType = classFieldDesc.getDataType();
+        if (dataType == null) {
+            log.warn("字段{}的数据类型为空，无法转成json_value",classFieldDesc.getParameterName());
+            write.append("\"数据异常\"");
+        }else {
+            switch (dataType){
+                case BOOLEAN:  write.append("false"); break;
+                case STRING: write.append("\"字符串\"");break;
+                case ARRAY: writeArray(classFieldDesc,write);break;
+                case NUMBER: write.append("1234");;break;
+                case OBJECT: writeBean(classFieldDesc,write); break;
+                default:write.append("\"未知数据类型\"");
+            }
+        }
+        write.append(",");
+    }
+
+    private void writeBean(ClassFieldDesc field, StringBuilder write) {
+        write.append("{");
+        ClassDesc classDesc= field.getNestingClssDesc();
+        if (classDesc!=null && CollectionUtils.isNotEmpty(classDesc.getClassFieldDescs())){
+            writeField(classDesc.getClassFieldDescs(),write);
+        }
+        write.append("}");
+    }
+
+    private void writeArray(ClassFieldDesc field,StringBuilder write){
+        write.append("[");
+             //TODO 数组内也可能是数字，字符串什么的
+            ClassDesc classDesc= field.getNestingClssDesc();
+            if (classDesc!=null && CollectionUtils.isNotEmpty(classDesc.getClassFieldDescs())){
+                writeField(classDesc.getClassFieldDescs(),write);
+            }
+        write.append("]");
+    }
+
+    private void writeKey(ClassFieldDesc classFieldDesc,StringBuilder write){
+        write.append("\""+classFieldDesc+"\":");      //eg: "name":
     }
 
     /**

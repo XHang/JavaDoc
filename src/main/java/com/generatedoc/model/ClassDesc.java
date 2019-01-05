@@ -1,12 +1,15 @@
 package com.generatedoc.model;
 
+import com.generatedoc.emnu.DataType;
+
 import java.util.List;
 
 /**
- * 一个实体类的描述
+ * 一个参数类的描述
  */
 public class ClassDesc {
 
+    private DataType dataType;
     /**
      * 类的描述
      */
@@ -30,5 +33,13 @@ public class ClassDesc {
 
     public void setClassFieldDescs(List<ClassFieldDesc> classFieldDescs) {
         this.classFieldDescs = classFieldDescs;
+    }
+
+    public DataType getDataType() {
+        return dataType;
+    }
+
+    public void setDataType(DataType dataType) {
+        this.dataType = dataType;
     }
 }

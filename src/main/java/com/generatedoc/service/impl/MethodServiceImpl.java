@@ -43,17 +43,18 @@ public class MethodServiceImpl implements MethodService {
         return desc;
     }
     @Override
-    public ClassDesc buildResponseDesc(JavaMethod javaMethod) {
+    public void buildResponseDesc(JavaMethod javaMethod, ApiInterface apiInterface) {
         try {
             if (!isResponseBody(javaMethod)){
                 //暂时只支持Json序列化
-                return null;
+                return ;
             }
             ClassDesc responerDesc=classService.getJavaClassDescForResponer(javaMethod.getReturns());
-            return responerDesc;
+            apiInterface.setResponseDesc(responerDesc);
+            apiInterface.setReturnExample(classService.toJsonString(responerDesc));
         } catch (Exception e) {
             log.error("处理返回值描述失败",e);
-            return null;
+            return ;
         }
     }
 
@@ -191,6 +192,7 @@ public class MethodServiceImpl implements MethodService {
             }
         }
         apiInterface.setBodyParameter(bodyParameterDesc);
+        apiInterface.setParameterExample(classService.toJsonString(bodyParameterDesc));
         apiInterface.setHeaderParameters(headParameterDesc);
     }
 

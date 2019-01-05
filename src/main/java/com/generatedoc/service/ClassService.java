@@ -84,4 +84,11 @@ public interface ClassService {
     List<ClassFieldDesc> getFieldDescForHeadParameter(JavaClass clazz);
 
     String buildTitle(JavaClass javaClass);
+
+    /**
+     * 将类描述转成Json字符串
+     * @param bodyParameterDesc
+     * @return
+     */
+    String toJsonString(ClassDesc classDesc);
 }

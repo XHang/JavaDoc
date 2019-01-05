@@ -22,17 +22,17 @@ public interface MethodService {
         apiInterface.setRequestType(getRequestType(javaMethod));
         apiInterface.setUrl(getUrl(javaMethod));
         buildRequestDesc(javaMethod,apiInterface);
-        ClassDesc descs = buildResponseDesc(javaMethod);
-        apiInterface.setResponseDesc(descs);
+        buildResponseDesc(javaMethod,apiInterface);
         return apiInterface;
     }
 
     /**
      * 抽取接口响应的字段解释
      * @param javaMethod
+     * @param apiInterface
      * @return
      */
-    ClassDesc buildResponseDesc(JavaMethod javaMethod);
+    void buildResponseDesc(JavaMethod javaMethod, ApiInterface apiInterface);
 
     /**
      * 抽取方法里面参数的解释
