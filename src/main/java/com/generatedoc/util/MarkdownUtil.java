@@ -50,6 +50,7 @@ public class MarkdownUtil {
         sb.append(code);
         sb.append(System.lineSeparator());
         sb.append(SymbolConstant.CODE);
+        sb.append(System.lineSeparator());
         return sb.toString();
     }
 
@@ -86,6 +87,15 @@ public class MarkdownUtil {
      */
     public static String buildSingleOrderItem(int itemId,String msg){
         return buildOrderSymbol(itemId)+msg+System.lineSeparator();
+    }
+    /**
+     *  构建单个有序列表
+     * @param itemId 序号
+     * @param msg 列表的信息
+     * @return
+     */
+    public static String buildSingleOrderItemNoWarp(int itemId,String msg){
+        return buildOrderSymbol(itemId)+msg;
     }
 
 
@@ -163,6 +173,9 @@ public class MarkdownUtil {
 
     public static String buildCodeLine(String code){
        return "`"+code+"`"+System.lineSeparator();
+    }
+    public static String buildCodeLineNoWrap(String code){
+        return "`"+code+"`";
     }
 
     public static String escapeString(String src){

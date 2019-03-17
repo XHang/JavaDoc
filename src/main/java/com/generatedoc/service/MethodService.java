@@ -2,7 +2,6 @@ package com.generatedoc.service;
 
 import com.generatedoc.emnu.RequestType;
 import com.generatedoc.model.ApiInterface;
-import com.generatedoc.model.ClassDesc;
 import com.thoughtworks.qdox.model.JavaMethod;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;

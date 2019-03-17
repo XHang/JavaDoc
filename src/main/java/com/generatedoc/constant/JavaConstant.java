@@ -43,4 +43,10 @@ public class JavaConstant {
         OWN_TYPE.add("Timestamp");
         OWN_TYPE.add("LocalDate");
     }
+    public static final String INTEGER_MIN_NAME = "Integer.MIN_VALUE";
+    public static final String INTEGER_MAX_NAME =  "Integer.MAX_VALUE";
+
+    public static final String INTEGER_MIN_VALUE = "0x80000000";
+    public static final String Integer_MAX_VALUE = "0x7fffffff";
+
 }

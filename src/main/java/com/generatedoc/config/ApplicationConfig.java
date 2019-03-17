@@ -12,6 +12,10 @@ public class ApplicationConfig {
 
     private String defaultAuthor;
 
+    private String scanPath;
+
+    private String savePath;
+
     public String[] getFilters() {
         return filters;
     }
@@ -26,5 +30,21 @@ public class ApplicationConfig {
 
     public void setDefaultAuthor(String defaultAuthor) {
         this.defaultAuthor = defaultAuthor;
+    }
+
+    public String getScanPath() {
+        return scanPath;
+    }
+
+    public void setScanPath(String scanPath) {
+        this.scanPath = scanPath;
+    }
+
+    public String getSavePath() {
+        return savePath;
+    }
+
+    public void setSavePath(String savePath) {
+        this.savePath = savePath;
     }
 }

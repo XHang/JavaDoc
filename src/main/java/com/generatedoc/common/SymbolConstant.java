@@ -18,6 +18,11 @@ public class SymbolConstant {
      */
     public  static final String REFERENCE = ">";
 
+    /**
+     * 代码块列表的符号
+     */
+    public  static final String BR_SYMBOL = "<br/>";
+
 
 
 

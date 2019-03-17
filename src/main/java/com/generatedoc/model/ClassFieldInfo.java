@@ -4,7 +4,7 @@ import com.generatedoc.emnu.DataType;
 
 import java.util.List;
 
-public class ClassFieldDesc {
+public class ClassFieldInfo {
     /**
      * 参数名
      */
@@ -59,13 +59,13 @@ public class ClassFieldDesc {
     /**
      *嵌套实体类的字段描述
      */
-    private ClassDesc nestingClssDesc;
+    private ClassInfo nestingClssDesc;
 
-    public ClassDesc getNestingClssDesc() {
+    public ClassInfo getNestingClssDesc() {
         return nestingClssDesc;
     }
 
-    public void setNestingClssDesc(ClassDesc nestingClssDesc) {
+    public void setNestingClssDesc(ClassInfo nestingClssDesc) {
         this.nestingClssDesc = nestingClssDesc;
     }
 }

@@ -14,13 +14,14 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.generatedoc.util.StringUtil.removeBothSideChar;
 
-//@Service
+@Service
 public class MethodServiceImpl implements MethodService {
 
      public static final Logger log = LoggerFactory.getLogger(MethodServiceImpl.class);
@@ -49,7 +50,7 @@ public class MethodServiceImpl implements MethodService {
                 //暂时只支持Json序列化
                 return ;
             }
-            ClassDesc responerDesc=classService.getJavaClassDescForResponer(javaMethod.getReturns());
+            ClassInfo responerDesc=classService.getJavaClassDescForResponer(javaMethod.getReturns());
             apiInterface.setResponseDesc(responerDesc);
             apiInterface.setReturnExample(classService.toJsonString(responerDesc));
         } catch (Exception e) {
@@ -178,8 +179,8 @@ public class MethodServiceImpl implements MethodService {
         if (CollectionUtils.isEmpty(parameters)){
             return ;
         }
-        ClassDesc bodyParameterDesc = null;
-        List<HeadParameterDesc> headParameterDesc = new ArrayList<>();
+        ClassInfo bodyParameterDesc = null;
+        List<HeadParameterInfo> headParameterDesc = new ArrayList<>();
         for (JavaParameter parameter : parameters) {
             if (!isRequestParameter(parameter)){
                 continue;
@@ -187,7 +188,7 @@ public class MethodServiceImpl implements MethodService {
             if (parameterService.isBodyParameter(parameter)){
                 bodyParameterDesc = parameterService.bodyParameterToDoc(parameter,javaMethod);
             }else{
-                List<HeadParameterDesc> descs = parameterService.headerParameterToDoc(parameter,javaMethod);
+                List<HeadParameterInfo> descs = parameterService.headerParameterToDoc(parameter,javaMethod);
                 headParameterDesc.addAll(descs);
             }
         }

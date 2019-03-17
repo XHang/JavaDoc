@@ -1,13 +1,17 @@
 package com.generatedoc.service.impl;
 
+import com.generatedoc.constant.SpringMVCConstant;
+import com.generatedoc.constant.ValidConstant;
 import com.generatedoc.emnu.DataType;
-import com.generatedoc.model.ClassDesc;
-import com.generatedoc.model.ClassFieldDesc;
-import com.generatedoc.model.HeadParameterDesc;
+import com.generatedoc.model.ClassInfo;
+import com.generatedoc.model.ClassFieldInfo;
+import com.generatedoc.model.HeadParameterInfo;
 import com.generatedoc.exception.DOCError;
 import com.generatedoc.service.ClassService;
 import com.generatedoc.service.ParameterService;
+import com.generatedoc.util.AnnotationUtil;
 import com.thoughtworks.qdox.model.*;
+import com.thoughtworks.qdox.model.impl.DefaultJavaParameterizedType;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
@@ -17,6 +21,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 @Service
 public class QdoxParameterServiceImpl implements ParameterService {
 
@@ -25,18 +31,18 @@ public class QdoxParameterServiceImpl implements ParameterService {
      private ClassService classService;
 
     @Override
-    public List<HeadParameterDesc> headerParameterToDoc(JavaParameter parameter, JavaMethod javaMethod) {
+    public List<HeadParameterInfo> headerParameterToDoc(JavaParameter parameter, JavaMethod javaMethod) {
         //TODO 小心别名啦
-        List<HeadParameterDesc> result = new ArrayList<>();
+        List<HeadParameterInfo> result = new ArrayList<>();
 
         if (isInnerParameter(parameter)){
-            List<ClassFieldDesc> list = classService.getFieldDescForHeadParameter(parameter.getJavaClass());
-            for (ClassFieldDesc classFieldDesc : list) {
-                HeadParameterDesc desc = converClassFieldDesc(classFieldDesc);
+            List<ClassFieldInfo> list = classService.getFieldDescForHeadParameter(parameter.getJavaClass());
+            for (ClassFieldInfo classFieldInfo : list) {
+                HeadParameterInfo desc = converClassFieldDesc(classFieldInfo);
                 result.add(desc);
             }
         }else{
-            HeadParameterDesc desc = new HeadParameterDesc();
+            HeadParameterInfo desc = new HeadParameterInfo();
             desc.setDataType(classService.getDataType(parameter.getJavaClass()));
             desc.setParameterDesc(buildParameterDesc(parameter,javaMethod));
             desc.setParameterName(parameter.getName());
@@ -69,17 +75,54 @@ public class QdoxParameterServiceImpl implements ParameterService {
 
 
     @Override
-    public ClassDesc bodyParameterToDoc(JavaParameter parameter, JavaMethod javaMethod) {
+    public ClassInfo bodyParameterToDoc(JavaParameter parameter, JavaMethod javaMethod) {
         try {
-           ClassDesc classDesc = classService.getJavaClassDescForBodyParameter(parameter);
-            return classDesc;
+            ClassInfo classInfo =  buildParameterInfo(parameter);
+           List<ClassFieldInfo> fieldInfos  = classService.getJavaClassDescForBodyParameter(getRealJavaClass(parameter),isLimitParameter(parameter),getGroupName(parameter));
+           classInfo.setClassFieldInfos(fieldInfos);
+           return classInfo;
         } catch (Exception e) {
             throw new DOCError("抽取请求体参数信息失败",e);
         }
+
     }
-    public HeadParameterDesc converClassFieldDesc(ClassFieldDesc fieldDesc){
+
+    private JavaClass getRealJavaClass(JavaParameter parameter) {
+        JavaClass target = null;
+        if (DataType.ARRAY.equals(classService.getDataType(parameter.getJavaClass()))){
+            DefaultJavaParameterizedType parameterizedType = (DefaultJavaParameterizedType) parameter.getType();
+            List<JavaType> javaTypes = parameterizedType.getActualTypeArguments();
+            if (CollectionUtils.isEmpty(javaTypes)){
+                return null;
+            }
+            return (JavaClass) javaTypes.get(0);
+        }
+        return parameter.getJavaClass();
+    }
+
+    private boolean isLimitParameter(JavaParameter parameter) {
+        List<JavaAnnotation> annotations = parameter.getAnnotations();
+        return AnnotationUtil.isExistAnnotation(ValidConstant.VALID_ANNOUATION,annotations);
+    }
+    private  List<String> getGroupName(JavaParameter parameter){
+        JavaAnnotation annotation = AnnotationUtil.getAnnotationByName(ValidConstant.VALID_ANNOUATION,parameter.getAnnotations());
+        if (annotation == null) {
+            return null;
+        }
+        List<String> groups = (List<String>) annotation.getNamedParameter("value");
+        return groups;
+    }
+
+    private ClassInfo buildParameterInfo(JavaParameter parameter) {
+        ClassInfo classInfo = new ClassInfo();
+        classInfo.setDataType(classService.getDataType(parameter.getJavaClass()));
+        classInfo.setClassDesc(Optional.ofNullable(parameter.getComment()).orElse(parameter.getName()));
+        return classInfo;
+    }
+
+    public HeadParameterInfo converClassFieldDesc(ClassFieldInfo fieldDesc){
         try {
-            HeadParameterDesc parameterDesc = new HeadParameterDesc();
+            HeadParameterInfo parameterDesc = new HeadParameterInfo();
             BeanUtils.copyProperties(parameterDesc,fieldDesc);
             return parameterDesc;
         } catch (Exception e) {
@@ -104,7 +147,7 @@ public class QdoxParameterServiceImpl implements ParameterService {
            JavaClass javaClass =  annotation.getType();
             log.debug("遍历参数{}的注解，注解类名为{}",parameter.getName(),javaClass.getName());
            //TODO 有可能返回包名，所以要小心点
-           if ("RequestBody".equals(javaClass.getName())){
+           if (SpringMVCConstant.REQUEST_BODY.equals(AnnotationUtil.getSimpleClassName(javaClass.getName()))){
                log.debug("参数名{}有RequestBody注解，因此是请求体参数",parameter.getName());
                return true;
            }

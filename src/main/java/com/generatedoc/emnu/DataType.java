@@ -7,7 +7,8 @@ public enum DataType {
     NUMBER("数字"),
     BOOLEAN("布尔值"),
     OBJECT("对象"),
-    ARRAY("数组");
+    ARRAY("数组"),
+    ENUM("枚举");
     private String name;
 
     DataType(String name) {

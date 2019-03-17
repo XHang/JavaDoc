@@ -1,9 +1,12 @@
 package com.generatedoc.main;
 
+import com.generatedoc.config.ApplicationConfig;
 import com.generatedoc.model.APIDocument;
 import com.generatedoc.model.ApiInterface;
 import com.generatedoc.filter.JavaFileFilter;
 import com.generatedoc.service.*;
+import com.generatedoc.util.IOUtil;
+import com.generatedoc.util.StringUtil;
 import com.thoughtworks.qdox.model.JavaClass;
 import com.thoughtworks.qdox.model.JavaMethod;
 import org.apache.commons.collections4.CollectionUtils;
@@ -37,20 +40,31 @@ public class DocGenerateStarter {
     @Autowired
     private ClassService classService;
 
+    @Autowired
+    private ApplicationConfig config;
+
     public  void run (){
-    /*    System.out.println("请输入文件夹路径");
-        String path = IOUtil.getInput();
-        System.out.println("请输入生成接口文件的路径");
-        String targetpath = IOUtil.getInput();*/
-        String path = "D:\\gddxit-project\\kunming-marketing-service";
-        List<File> files = getJavaFilesByPath(path);
+        setConfigIfNotExist(config);
+        List<File> files = getJavaFilesByPath(config.getScanPath());
         contextService.setContext(files);
         List<APIDocument> documents = generateDoc(files);
-        String targetpath = "E:\\工作目录\\昆明\\接口文档\\setting接口文档生成";
-        saveDoc(targetpath,documents);
-
+        saveDoc(config.getSavePath(),documents);
     }
 
+    private void setConfigIfNotExist(ApplicationConfig config) {
+        if(StringUtil.isEmpty(config.getSavePath())){
+            log.warn("application配置文件没有配置接口文档保存位置，需要手动设置");
+            log.info("请输入接口文档保存位置");
+            String savePath= IOUtil.getInput();
+            config.setSavePath(savePath);
+        }
+        if (StringUtil.isEmpty(config.getScanPath())){
+            log.warn("application配置文件没有配置接口文档扫描位置，需要手动设置");
+            log.info("请输入接口文档扫描文件路径");
+            String scanPath= IOUtil.getInput();
+            config.setScanPath(scanPath);
+        }
+    }
 
 
     /**
@@ -72,13 +86,35 @@ public class DocGenerateStarter {
      * @return 接口文档的实体类
      */
    public   List<APIDocument> generateDoc(List<File> files){
-      List<JavaClass> javaClasses = new ArrayList<>();
-      //将文件集合里面的对外接口类抽取出来，填充到javaClasses里面
-      files.forEach(file -> classService.getControlClass(file,javaClasses));
-      List<APIDocument> apiDocuments = new ArrayList<>();
-      //将对外接口类转成接口文档对象
-       javaClasses.forEach((javaClass -> apiDocuments.add(controllerService.generationApiDocment(javaClass))));
+       List<JavaClass> interfaceClasses  = getInterfaceClassByFiles(files);
+      List<APIDocument> apiDocuments = getApiDocumentByClass(interfaceClasses);
        return apiDocuments;
+   }
+
+    /**
+     *  将文件集合里面的对外接口类抽取出来，并返回
+     * @param files
+     * @return
+     */
+   public   List<JavaClass> getInterfaceClassByFiles(List<File> files){
+       List<JavaClass> javaClasses = new ArrayList<>();
+       for (File file : files) {
+           javaClasses.addAll(classService.getControlClass(file));
+       }
+       return javaClasses;
+   }
+
+    /**
+     * 将对外接口类转成接口文档对象
+     * @param classes
+     * @return
+     */
+   public List<APIDocument> getApiDocumentByClass(List<JavaClass> classes){
+       List<APIDocument> result = new ArrayList<>();
+       for (JavaClass clazz : classes) {
+           result.add(controllerService.generationApiDocment(clazz));
+       }
+       return result;
    }
 
 

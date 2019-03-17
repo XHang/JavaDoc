@@ -4,7 +4,7 @@ package com.generatedoc.model;
 /**
  * 接口参数
  */
-public class HeadParameterDesc extends ClassFieldDesc {
+public class HeadParameterInfo extends ClassFieldInfo {
 
     /**
      * 默认值

@@ -16,7 +16,9 @@ public enum RuleType {
     /**
      * 最小长度限制
      */
-    MIN_LENGTH_LIMIT("最小长度限制"),;
+    MIN_LENGTH_LIMIT("最小长度限制"),
+
+    SIZE_LENGTH_LIMIT("长度限制");
 
     private String name;
 

@@ -44,6 +44,11 @@ public class SpringMVCConstant {
      * 返回值直接返回到前端的注解
      */
     public static final String RESPONSE_BODY = "ResponseBody";
+
+    /**
+     * 请求参数直接从请求体里面取的注解
+     */
+    public static final String REQUEST_BODY = "RequestBody";
     /**
      * 返回值直接返回到前端的注解
      */

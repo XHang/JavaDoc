@@ -50,7 +50,7 @@ public class MarkDownUtilTest {
         apiInterface.setRequestType(RequestType.GET);
         apiInterface.setTime(LocalDateTime.now());
         String json  =  JSONUtil.toJSONString(apiInterface);
-        String formatJson = JsonUtil.jsonFormat(json);
+        String formatJson =JSONUtil.jsonFormat(json);
         String code = MarkdownUtil.buildCodeArea(formatJson,"json");
         sb.append(code);
     }

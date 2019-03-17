@@ -22,12 +22,12 @@ public class ApiInterface {
     /**
      * 请求体接口参数
      */
-    private ClassDesc bodyParameter;
+    private ClassInfo bodyParameter;
 
     /**
      * 请求体接口参数列表
      */
-    private List<HeadParameterDesc> headerParameters;
+    private List<HeadParameterInfo> headerParameters;
     /**
      * 请求参数示例
      */
@@ -39,7 +39,7 @@ public class ApiInterface {
     /**
      * 接口返回值的解释
      */
-    private ClassDesc responseDesc;
+    private ClassInfo responseDesc;
 
     /**
      * 返回值示例。
@@ -82,11 +82,11 @@ public class ApiInterface {
     }
 
 
-    public ClassDesc getBodyParameter() {
+    public ClassInfo getBodyParameter() {
         return bodyParameter;
     }
 
-    public void setBodyParameter(ClassDesc bodyParameter) {
+    public void setBodyParameter(ClassInfo bodyParameter) {
         this.bodyParameter = bodyParameter;
     }
 
@@ -106,11 +106,11 @@ public class ApiInterface {
         this.returnType = returnType;
     }
 
-    public ClassDesc getResponseDesc() {
+    public ClassInfo getResponseDesc() {
         return responseDesc;
     }
 
-    public void setResponseDesc(ClassDesc responseDesc) {
+    public void setResponseDesc(ClassInfo responseDesc) {
         this.responseDesc = responseDesc;
     }
 
@@ -138,11 +138,11 @@ public class ApiInterface {
         this.time = time;
     }
 
-    public List<HeadParameterDesc> getHeaderParameters() {
+    public List<HeadParameterInfo> getHeaderParameters() {
         return headerParameters;
     }
 
-    public void setHeaderParameters(List<HeadParameterDesc> headerParameters) {
+    public void setHeaderParameters(List<HeadParameterInfo> headerParameters) {
         this.headerParameters = headerParameters;
     }
 }

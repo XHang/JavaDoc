@@ -5,9 +5,9 @@ import com.generatedoc.emnu.DataType;
 import java.util.List;
 
 /**
- * 一个参数类的描述
+ * 一个参数的描述
  */
-public class ClassDesc {
+public class ClassInfo {
 
     private DataType dataType;
     /**
@@ -17,7 +17,7 @@ public class ClassDesc {
     /**
      * 类的字段解释
      */
-    private List<ClassFieldDesc> classFieldDescs;
+    private List<ClassFieldInfo> classFieldInfos;
 
     public String getClassDesc() {
         return classDesc;
@@ -27,12 +27,12 @@ public class ClassDesc {
         this.classDesc = classDesc;
     }
 
-    public List<ClassFieldDesc> getClassFieldDescs() {
-        return classFieldDescs;
+    public List<ClassFieldInfo> getClassFieldInfos() {
+        return classFieldInfos;
     }
 
-    public void setClassFieldDescs(List<ClassFieldDesc> classFieldDescs) {
-        this.classFieldDescs = classFieldDescs;
+    public void setClassFieldInfos(List<ClassFieldInfo> classFieldInfos) {
+        this.classFieldInfos = classFieldInfos;
     }
 
     public DataType getDataType() {
