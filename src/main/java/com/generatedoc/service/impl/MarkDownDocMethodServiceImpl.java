@@ -1,8 +1,7 @@
 package com.generatedoc.service.impl;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.generatedoc.common.SymbolConstant;
-import com.generatedoc.constant.MappingConstant;
+import com.generatedoc.config.ApplicationConfig;
 import com.generatedoc.emnu.RequestType;
 import com.generatedoc.model.*;
 import com.generatedoc.service.MarkDownDocMethodService;
@@ -12,6 +11,7 @@ import com.generatedoc.util.MarkdownUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,77 +22,88 @@ import java.util.Optional;
 @Service
 public class MarkDownDocMethodServiceImpl implements MarkDownDocMethodService {
      public static final Logger log = LoggerFactory.getLogger(MarkDownDocMethodServiceImpl.class);
+
+     @Autowired
+    ApplicationConfig config;
+
     @Override
-    public void buildMethodDoc(ApiInterface apiInterface, StringBuilder sb, int index) {
+    public Node buildMethodDoc(ApiInterface apiInterface) {
         log.debug("开始生成方法{}的接口文档",apiInterface.getDesc());
-        buildTitle(apiInterface,sb,index);
-        sb.append(writeAuthor(apiInterface.getAuthor()));
-        sb.append(writeMethodDesc(apiInterface.getDesc()));
-        sb.append(writeRequestType(apiInterface.getRequestType()));
-        sb.append(writeRequestUrl(apiInterface.getUrl()));
-        buildRequestArea(sb,apiInterface);
-        buildResponseArea(sb,apiInterface);
-        sb.append( writeCreateTime());
-        sb.append( buildOtherDesc());
+        Node interfaceNode = new Node();
+        interfaceNode.setTitle(buildTitle(apiInterface));
+        interfaceNode.getNodes().add(writeAuthor(apiInterface.getAuthor()));
+        interfaceNode.getNodes().add(writeMethodDesc(apiInterface.getDesc()));
+        interfaceNode.getNodes().add(writeRequestType(apiInterface.getRequestType()));
+        interfaceNode.getNodes().add(writeRequestUrl(apiInterface.getUrl()));
+        interfaceNode.getNodes().add(buildRequestArea(apiInterface));
+        interfaceNode.getNodes().add(buildResponseArea(apiInterface));
+        interfaceNode.getNodes().add(buildOtherDesc());
+        return interfaceNode;
     }
 
-    private String buildOtherDesc() {
+    private Node buildOtherDesc() {
+        Node otherDesc = new Node();
+        otherDesc.setTitle("其他说明");
+        otherDesc.setContent(MarkdownUtil.buildText(config.getNothing()));
+        return otherDesc;
+    }
+
+    private Node writeCreateTime() {
+        Node timeNode = new Node();
         StringBuilder sb = new StringBuilder();
-        sb.append(MarkdownUtil.buildTitle(3,"其他说明:"));
-        sb.append(MarkdownUtil.buildText("  "));
-        return sb.toString();
+        timeNode.setTitle("修订日期");
+        timeNode.setContent(DateUitl.formatterChinaDate(LocalDateTime.now()));
+        return timeNode;
     }
 
-    private String writeCreateTime() {
+    private Node writeRequestUrl(String url) {
+        Node urlNode = new Node();
+        urlNode.setTitle("调用URL");
+        urlNode.setContent(MarkdownUtil.buildText(url));
+        return urlNode;
+    }
+
+    private Node  writeRequestType(RequestType requestType) {
+        Node requestTypeNode = new Node();
+        requestTypeNode.setTitle("调用方式");
+        requestTypeNode.setContent(MarkdownUtil.buildText(requestType.name()));
+        return requestTypeNode;
+    }
+
+    private Node writeMethodDesc(String desc) {
+        Node methodDescNode = new Node();
+        methodDescNode.setTitle("功能");
+        methodDescNode.setContent(MarkdownUtil.buildText(desc));
+        return methodDescNode;
+    }
+
+    private Node  writeAuthor(String author) {
+        Node authorNode = new Node();
         StringBuilder sb = new StringBuilder();
-        sb.append(MarkdownUtil.buildTitle(3,"修订日期:"));
-        sb.append(MarkdownUtil.buildText(DateUitl.formatterChinaDate(LocalDateTime.now())));
-        return sb.toString();
+        authorNode.setTitle("编写人员");
+        authorNode.setContent(MarkdownUtil.buildText(author));
+        return authorNode;
     }
 
-    private String writeRequestUrl(String url) {
+    private Node buildResponseArea(ApiInterface apiInterface) {
+        Node responseAreaNode = new Node();
+        responseAreaNode.setTitle("响应解释");
         StringBuilder sb = new StringBuilder();
-        sb.append(MarkdownUtil.buildTitle(3,"调用URL:"));
-        sb.append(MarkdownUtil.buildText(url));
-        return sb.toString();
-    }
-
-    private String writeRequestType(RequestType requestType) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(MarkdownUtil.buildTitle(3,"调用方式:"));
-        sb.append(MarkdownUtil.buildText(requestType.name()));
-        return sb.toString();
-    }
-
-    private String writeMethodDesc(String desc) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(MarkdownUtil.buildTitle(3,"功能:"));
-        sb.append(MarkdownUtil.buildText(desc));
-        return sb.toString();
-    }
-
-    private String  writeAuthor(String author) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(MarkdownUtil.buildTitle(3,"编写人员："));
-        sb.append(MarkdownUtil.buildText(author));
-        return sb.toString();
-    }
-
-    private void buildResponseArea(StringBuilder sb, ApiInterface apiInterface) {
-        sb.append(MarkdownUtil.buildTitle(3,"响应解释"));
         buildResponseDesc(sb,apiInterface);
         buildResponseExample(sb,apiInterface);
+        responseAreaNode.setContent(sb.toString());
+        return responseAreaNode;
     }
 
     private void buildResponseExample(StringBuilder sb, ApiInterface apiInterface) {
-        sb.append(MarkdownUtil.buildText("**响应示例**"));
+        sb.append(MarkdownUtil.buildBoldText("响应示例"));
         sb.append(MarkdownUtil.buildCodeArea(JSONUtil.jsonFormat(apiInterface.getReturnExample()),"JSON"));
     }
 
     private void buildResponseDesc(StringBuilder sb, ApiInterface apiInterface) {
         ClassInfo classInfo = apiInterface.getResponseDesc();
         if (classInfo == null){
-            sb.append(MarkdownUtil.buildText("无"));
+            sb.append(MarkdownUtil.buildText(config.getNothing()));
             return;
         }
         writeResponseBeanDesc(sb, classInfo);
@@ -100,7 +111,7 @@ public class MarkDownDocMethodServiceImpl implements MarkDownDocMethodService {
     }
     private void writeResponseBeanDesc(StringBuilder write, ClassInfo beanDesc){
         if (CollectionUtils.isEmpty(beanDesc.getClassFieldInfos())) {
-            write.append(MarkdownUtil.buildText("暂无，可能需要重新生成"));
+            write.append(MarkdownUtil.buildText(config.getNothing()));
             return;
         }
         List<ClassInfo> descList = writeResponseFieldDesc(write,beanDesc.getClassFieldInfos());
@@ -109,7 +120,7 @@ public class MarkDownDocMethodServiceImpl implements MarkDownDocMethodService {
                 if (CollectionUtils.isEmpty(classInfo.getClassFieldInfos())) {
                     continue;
                 }
-                write.append(MarkdownUtil.buildBoldText(classInfo +"字段解释"));
+                write.append(MarkdownUtil.buildBoldText(classInfo.getClassDesc() +"字段解释"));
                 writeResponseBeanDesc(write, classInfo);
             }
         }
@@ -128,7 +139,7 @@ public class MarkDownDocMethodServiceImpl implements MarkDownDocMethodService {
             log.debug("生成响应参数{}的解释",field.getParameterName());
             List<String> row = new ArrayList<>();
             row.add(field.getParameterName());
-            row.add(Optional.ofNullable(field.getParameterDesc()).orElse("暂无"));
+            row.add(Optional.ofNullable(field.getParameterDesc()).orElse(config.getNothing()));
             row.add(field.getDataType().getName());
             if (field.getNestingClssDesc() != null) {
                 classInfos.add(field.getNestingClssDesc());
@@ -141,21 +152,25 @@ public class MarkDownDocMethodServiceImpl implements MarkDownDocMethodService {
     }
 
     private void buildRequestExample(StringBuilder sb, ApiInterface apiInterface) {
-        sb.append(MarkdownUtil.buildText("**调用示例**"));
+        sb.append(MarkdownUtil.buildBoldText("调用示例"));
         sb.append((MarkdownUtil.buildCodeArea(JSONUtil.jsonFormat(apiInterface.getParameterExample()),"JSON")));
     }
 
-    private void buildRequestArea(StringBuilder sb, ApiInterface apiInterface) {
-        sb.append(MarkdownUtil.buildTitle(3,"参数说明"));
+    private Node buildRequestArea( ApiInterface apiInterface) {
+        Node requestAreaNode = new Node();
+        requestAreaNode.setTitle("参数说明");
+        StringBuilder sb = new StringBuilder();
         buildHeadParameterDesc(sb, apiInterface.getHeaderParameters());
         buildBodyParameterDesc(sb, apiInterface.getBodyParameter());
         buildRequestExample(sb,apiInterface);
+        requestAreaNode.setContent(sb.toString());
+        return requestAreaNode;
     }
 
     private void buildBodyParameterDesc(StringBuilder sb, ClassInfo classInfo) {
         sb.append(MarkdownUtil.buildBoldText("请求体参数"));
         if (classInfo == null){
-            sb.append(MarkdownUtil.buildText("无"));
+            sb.append(MarkdownUtil.buildText(config.getNothing()));
             return;
         }
         writerClassDesc(sb, classInfo);
@@ -171,7 +186,7 @@ public class MarkDownDocMethodServiceImpl implements MarkDownDocMethodService {
                     if (CollectionUtils.isEmpty(classInfo.getClassFieldInfos())){
                         continue;
                     }
-                    write.append(MarkdownUtil.buildBoldText(classInfo.getClassDesc()+"字段解释"));
+                    //write.append(MarkdownUtil.buildBoldText(classInfo.getClassDesc()+"字段解释"));
                     writerClassDesc(write, classInfo);
                 }
             }
@@ -180,7 +195,7 @@ public class MarkDownDocMethodServiceImpl implements MarkDownDocMethodService {
     private void buildHeadParameterDesc(StringBuilder sb, List<HeadParameterInfo> list){
         sb.append(MarkdownUtil.buildBoldText("请求头参数"));
         if (CollectionUtils.isEmpty(list)){
-            sb.append(MarkdownUtil.buildText("无"));
+            sb.append(MarkdownUtil.buildText(config.getNothing()));
             return;
         }
          writeFieldDesc(list,sb);
@@ -205,7 +220,7 @@ public class MarkDownDocMethodServiceImpl implements MarkDownDocMethodService {
             log.debug("生成请求参数{}的解释",desc.getParameterName());
             List<String> row = new ArrayList<>();
             row.add(desc.getParameterName());
-            row.add(Optional.ofNullable(MarkdownUtil.escapeString(desc.getParameterDesc())).orElse(""));
+            row.add(Optional.ofNullable(MarkdownUtil.escapeString(desc.getParameterDesc())).orElse(config.getNothing()));
             row.add(desc.getDataType().getName());
             row.add(getRuleInfo(desc));
             data.add(row);
@@ -222,7 +237,7 @@ public class MarkDownDocMethodServiceImpl implements MarkDownDocMethodService {
     private String getRuleInfo(ClassFieldInfo desc) {
         List<FieldRule> rules = desc.getFieldRule();
         if (CollectionUtils.isEmpty(rules)){
-            return "无";
+            return config.getNothing();
         }
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < rules.size(); i++) {
@@ -234,9 +249,7 @@ public class MarkDownDocMethodServiceImpl implements MarkDownDocMethodService {
     }
 
 
-    private void buildTitle(ApiInterface apiInterface, StringBuilder sb, int index) {
-        String titleIndex = MappingConstant.numberConverter(index);
-        String title =titleIndex+":"+apiInterface.getDesc();
-        sb.append(MarkdownUtil.buildTitle(2,title));
+    private String  buildTitle(ApiInterface apiInterface) {
+        return apiInterface.getDesc();
     }
 }

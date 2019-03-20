@@ -1,5 +1,6 @@
 package com.generatedoc.service.impl;
 
+import com.generatedoc.condition.SameClassCondition;
 import com.generatedoc.config.ApplicationConfig;
 import com.generatedoc.constant.SpringMVCConstant;
 import com.generatedoc.model.ApiInterface;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@SameClassCondition(ControllerService.class)
 public class ControllerServiceImpl implements ControllerService {
 
     @Autowired

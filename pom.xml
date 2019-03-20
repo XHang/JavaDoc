@@ -26,6 +26,10 @@
                     <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
         </plugins>
     </build>
     <dependencies>
@@ -112,5 +116,6 @@
         </dependency>
 
     </dependencies>
+
 
 </project>

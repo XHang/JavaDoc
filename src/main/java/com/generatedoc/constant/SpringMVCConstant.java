@@ -25,6 +25,7 @@ public class SpringMVCConstant {
     public static final String POST_ANNOTATION = "PostMapping";
     public static final String DELETE_ANNOTATION = "DeleteMapping";
     public static final String PATCH_ANNOTATION = "PatchMapping";
+    public static final String PUT_ANNOTATION = "PutMapping";
     //不带任何请求方式的请求注解
     public static final String REQUEST_ANNOTATION = "RequestMapping";
 
@@ -60,11 +61,14 @@ public class SpringMVCConstant {
         CONTROLLER_METHOD.add(DELETE_ANNOTATION);
         CONTROLLER_METHOD.add(PATCH_ANNOTATION);
         CONTROLLER_METHOD.add(REQUEST_ANNOTATION);
+        CONTROLLER_METHOD.add(PUT_ANNOTATION);
 
         REQUEST_TYPE_MAP.put(GET_ANNOTATION,RequestType.GET);
         REQUEST_TYPE_MAP.put(POST_ANNOTATION,RequestType.POST);
         REQUEST_TYPE_MAP.put(DELETE_ANNOTATION,RequestType.DELETE);
         REQUEST_TYPE_MAP.put(PATCH_ANNOTATION,RequestType.PATCH);
+        REQUEST_TYPE_MAP.put(PUT_ANNOTATION,RequestType.PUT);
+
     }
 
     /**
@@ -82,5 +86,6 @@ public class SpringMVCConstant {
         CONTROLLER_NAMES.add("Controller");
         CONTROLLER_NAMES.add("RestController");
     }
+    
 
 }

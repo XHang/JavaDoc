@@ -98,9 +98,12 @@ public class QdoxClassServieImpl implements ClassService {
                 nestingBean.setClassDesc(field.getName());
                 List<ClassFieldInfo> fieldDescs = getJavaClassDesc(field.getType(),isLimit,groupNames,aleradyResolve);
                 nestingBean.setClassFieldInfos(fieldDescs);
+                nestingBean.setDataType(getDataType(field.getType()));
                 desc.setNestingClssDesc(nestingBean);
+            }else{
+                //如果当前遍历的字段是集合类型
+                desc.setNestingClssDesc(getNestingCollectionFieldDesc(field,isLimit,groupNames,aleradyResolve));
             }
-            desc.setNestingClssDesc(getNestingCollectionFieldDesc(field,isLimit,groupNames,aleradyResolve));
             fieldDescList.add(desc);
         }
         if (isNeedGetSuperClassDesc(clazz)){
@@ -124,6 +127,7 @@ public class QdoxClassServieImpl implements ClassService {
             nestingBean.setClassDesc(field.getName());
             List<ClassFieldInfo> fieldDescs = getJavaClassDesc(innerClass,isLimit,groupNames,aleradyResolve);
             nestingBean.setClassFieldInfos(fieldDescs);
+            nestingBean.setDataType(getDataType(innerClass));
             return nestingBean;
         }
         return null;
@@ -132,6 +136,11 @@ public class QdoxClassServieImpl implements ClassService {
         return aleradyResolve.contains(clazz);
     }
 
+    /**
+     * 是否需要引入父类字段解释
+     * @param javaClass
+     * @return
+     */
     private boolean isNeedGetSuperClassDesc(JavaClass javaClass){
         JavaClass superClass = javaClass.getSuperJavaClass();
         if (superClass == null){
@@ -174,9 +183,10 @@ public class QdoxClassServieImpl implements ClassService {
         return null;
     }
 
-    private JavaClass getRealClass(JavaClass clazz) {
-        String className = clazz.getFullyQualifiedName();
-        JavaClass javaClass = ClassContext.getClass(clazz.getFullyQualifiedName());
+    @Override
+    public JavaClass getRealClass(JavaClass clazz) {
+        String className = clazz.getCanonicalName();
+        JavaClass javaClass = ClassContext.getClass(className);
 
         if (javaClass == null){
             log.info("简单查找类失败，类名是{}",clazz.getFullyQualifiedName());
@@ -430,7 +440,10 @@ public class QdoxClassServieImpl implements ClassService {
         if (JavaConstant.STRING_TPYE.equals(className)){
             return DataType.STRING;
         }
-        if (JavaConstant.COLLECTION_TYPES.contains(className)){
+        if (JavaConstant.BOOLEAN_BASE_TYPE.endsWith(className)){
+            return DataType.BOOLEAN;
+        }
+        if (JavaConstant.COLLECTION_TYPES.contains(className) || getRealClass(clazz).isArray()){
             return DataType.ARRAY;
         }
         if (getRealClass(clazz).isEnum()){
@@ -583,12 +596,12 @@ public class QdoxClassServieImpl implements ClassService {
     }
 
     private void writeBean(ClassFieldInfo field, StringBuilder write) {
-        write.append("{");
         ClassInfo classInfo = field.getNestingClssDesc();
         if (classInfo !=null && CollectionUtils.isNotEmpty(classInfo.getClassFieldInfos())){
             writeField(classInfo.getClassFieldInfos(),write);
+        }else{
+            write.append("{}");
         }
-        write.append("}");
     }
 
     private void writeArray(ClassFieldInfo field, StringBuilder write){
@@ -618,12 +631,8 @@ public class QdoxClassServieImpl implements ClassService {
             return;
         }
         aleradyResolve.add(clazz);
-        ClassInfo classInfo = new ClassInfo();
-        classInfo.setClassDesc(clazz.getComment());
         log.debug("开始抽取类{}的字段信息",clazz.getName());
         List<JavaField> fields =  clazz.getFields();
-        List<ClassFieldInfo> fieldDescList = new ArrayList<>();
-        classInfo.setClassFieldInfos(fieldDescList);
         for (JavaField field : fields) {
             if (!isMemberVar(field)){
                 log.debug("字段{}非成员变量，跳过解析",field.getName());
@@ -638,11 +647,16 @@ public class QdoxClassServieImpl implements ClassService {
             if (isBean(field.getType())){
                 //TODO Spring MVC 下面的这个请求头怎么弄来着？
                 getFieldDescForHeadParameter(field.getType(),container,aleradyResolve,field.getName()+".");
+            }else{
+                container.add(desc);
             }
         }
     }
 
     private boolean isBean(JavaClass javaClass){
+        if (isBaseType(javaClass)){
+            return false;
+        }
         if (javaClass.isEnum()){
             return false;
         }
@@ -651,6 +665,11 @@ public class QdoxClassServieImpl implements ClassService {
         }
         String className = AnnotationUtil.getSimpleClassName(javaClass.getName());
         return !JavaConstant.OWN_TYPE.contains(className);
+    }
+
+    private boolean isBaseType(JavaClass javaClass) {
+        String name = javaClass.getName();
+        return JavaConstant.BASE_TYPE.contains(name);
     }
 
 

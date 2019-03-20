@@ -16,6 +16,8 @@ public class ApplicationConfig {
 
     private String savePath;
 
+    private String nothing = "无";
+
     public String[] getFilters() {
         return filters;
     }
@@ -46,5 +48,13 @@ public class ApplicationConfig {
 
     public void setSavePath(String savePath) {
         this.savePath = savePath;
+    }
+
+    public String getNothing() {
+        return nothing;
+    }
+
+    public void setNothing(String nothing) {
+        this.nothing = nothing;
     }
 }

@@ -48,5 +48,21 @@ public class JavaConstant {
 
     public static final String INTEGER_MIN_VALUE = "0x80000000";
     public static final String Integer_MAX_VALUE = "0x7fffffff";
+    /**
+     *  基本数据类型
+     */
+
+    public static final List<String> BASE_TYPE = new ArrayList<>();
+    public static final String BOOLEAN_BASE_TYPE = "boolean";
+
+    static {
+        BASE_TYPE.add(BOOLEAN_BASE_TYPE);
+        BASE_TYPE.add("int");
+        BASE_TYPE.add("short");
+        BASE_TYPE.add("char");
+        BASE_TYPE.add("long");
+        BASE_TYPE.add("byte");
+
+    }
 
 }

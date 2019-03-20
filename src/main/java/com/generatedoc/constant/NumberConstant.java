@@ -6,7 +6,7 @@ import javafx.util.converter.NumberStringConverter;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MappingConstant {
+public class NumberConstant {
     public static final Map<String,String> NUMBER_MAP = new HashMap<>();
     static {
         NUMBER_MAP.put("1","一");

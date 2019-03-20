@@ -15,12 +15,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+
 @Component
 public class ContextServiceImpl implements ContextService {
      public static final Logger log = LoggerFactory.getLogger(ContextServiceImpl.class);
 
 
-
+    /**
+     * 设置工作的上下文
+     * @param files
+     */
     @Override
     public void setContext(List<File> files) {
         List<JavaClass> classes = new ArrayList<>();

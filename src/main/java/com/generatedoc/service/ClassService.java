@@ -32,6 +32,13 @@ public interface ClassService {
     ClassInfo getJavaClassDescForResponer(JavaClass javaClass);
 
     /**
+     * 从上下文中，找出真实的class
+     * @param clazz
+     * @return
+     */
+    JavaClass getRealClass(JavaClass clazz);
+
+    /**
      * 根据解析器的数据类型，匹配文档的数据类型
      * @param clazz
      * @return

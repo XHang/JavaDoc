@@ -1,5 +1,7 @@
 package com.generatedoc.service.impl;
 
+import com.generatedoc.constant.CommentConstant;
+import com.generatedoc.constant.JavaConstant;
 import com.generatedoc.constant.SpringMVCConstant;
 import com.generatedoc.constant.ValidConstant;
 import com.generatedoc.emnu.DataType;
@@ -10,6 +12,8 @@ import com.generatedoc.exception.DOCError;
 import com.generatedoc.service.ClassService;
 import com.generatedoc.service.ParameterService;
 import com.generatedoc.util.AnnotationUtil;
+import com.generatedoc.util.JSONUtil;
+import com.thoughtworks.qdox.library.JavaClassContext;
 import com.thoughtworks.qdox.model.*;
 import com.thoughtworks.qdox.model.impl.DefaultJavaParameterizedType;
 import org.apache.commons.beanutils.BeanUtils;
@@ -53,12 +57,19 @@ public class QdoxParameterServiceImpl implements ParameterService {
     }
 
     private String buildParameterDesc(JavaParameter parameter, JavaMethod javaMethod) {
-        DocletTag docletTag = javaMethod.getTagByName(parameter.getName());
-        if (docletTag == null){
+        List<DocletTag> docletTags = javaMethod.getTagsByName(CommentConstant.PARAMETER);
+        if (CollectionUtils.isEmpty(docletTags)){
             log.warn("方法{}找不到参数{}的注释",javaMethod.getName(),parameter.getName());
             return "";
         }
-        return docletTag.getValue();
+        for (DocletTag docletTag : docletTags) {
+            String cmment = docletTag.getValue();
+            if (cmment.contains(parameter.getName())){
+                return cmment.replace(parameter.getName(),"").trim();
+            }
+        }
+        log.warn("方法{}找不到参数{}的注释",javaMethod.getName(),parameter.getName());
+        return "";
     }
 
     /**
@@ -90,19 +101,29 @@ public class QdoxParameterServiceImpl implements ParameterService {
     private JavaClass getRealJavaClass(JavaParameter parameter) {
         JavaClass target = null;
         if (DataType.ARRAY.equals(classService.getDataType(parameter.getJavaClass()))){
+            if (parameter.getJavaClass().isArray()){
+                return classService.getRealClass(parameter.getJavaClass());
+            }
             DefaultJavaParameterizedType parameterizedType = (DefaultJavaParameterizedType) parameter.getType();
             List<JavaType> javaTypes = parameterizedType.getActualTypeArguments();
             if (CollectionUtils.isEmpty(javaTypes)){
-                return null;
+               return null;
             }
             return (JavaClass) javaTypes.get(0);
         }
         return parameter.getJavaClass();
     }
 
+    /**
+     * 是否需要校验参数
+     * @param parameter
+     * @return
+     */
     private boolean isLimitParameter(JavaParameter parameter) {
         List<JavaAnnotation> annotations = parameter.getAnnotations();
-        return AnnotationUtil.isExistAnnotation(ValidConstant.VALID_ANNOUATION,annotations);
+        String className =  AnnotationUtil.getSimpleClassName(parameter.getJavaClass().getName());
+        //参数上面需要有@Validated 注解且类型不是集合类型
+        return AnnotationUtil.isExistAnnotation(ValidConstant.VALID_ANNOUATION,annotations) && !JavaConstant.COLLECTION_TYPES.contains(className);
     }
     private  List<String> getGroupName(JavaParameter parameter){
         JavaAnnotation annotation = AnnotationUtil.getAnnotationByName(ValidConstant.VALID_ANNOUATION,parameter.getAnnotations());

@@ -93,6 +93,9 @@ public class MethodServiceImpl implements MethodService {
             return prefix;
         }
        String suffix =  getUrl(methodAnnotation);
+        if (!prefix.endsWith("/") && !suffix.startsWith(("/"))){
+            suffix = "/"+suffix;
+        }
         return prefix+suffix;
     }
     private String getUrl(JavaAnnotation annotation){
@@ -132,6 +135,7 @@ public class MethodServiceImpl implements MethodService {
                 return annotation;
             }
         }
+        log.warn("方法【{}】没有关键注解，不生成接口文档",javaMethod.getName());
         return null;
     }
 
@@ -161,15 +165,30 @@ public class MethodServiceImpl implements MethodService {
     }
 
     private String getMethod(JavaAnnotation annotation) {
+        String annouationName = AnnotationUtil.getSimpleClassName(annotation.getType().getName());
+        String method =RequestType.UNKNOWN.name();;
+        if (!SpringMVCConstant.REQUEST_ANNOTATION.equals(annouationName)){
+            log.error("该注解【{}】不是请求方式注解",annouationName);
+            return method;
+        }
         try {
-            List<String> methods = (List<String>) annotation .getNamedParameter(SpringMVCConstant.REQUEST_METHOD);
-            if (CollectionUtils.isEmpty(methods)){
-                log.error("获取注解{}的请求方式失败，{}属性没有值",annotation.getType().getName(),SpringMVCConstant.REQUEST_METHOD);
-                return RequestType.UNKNOWN.name();
+            Object methodObj =  annotation .getNamedParameter(SpringMVCConstant.REQUEST_METHOD);
+            if (methodObj==null){
+                return RequestType.ALL.name();
             }
-            return AnnotationUtil.getLastStrWithoutDot(methods.get(0));
+            if (methodObj instanceof List){
+                List<String> methods = (List<String>) methodObj;
+                if (CollectionUtils.isEmpty(methods)){
+                    log.error("获取注解{}的请求方式失败，{}属性没有值",annotation.getType().getName(),SpringMVCConstant.REQUEST_METHOD);
+                    return RequestType.UNKNOWN.name();
+                }
+                method = methods.get(0);
+            }else{
+                method = (String) methodObj;
+            }
+            return AnnotationUtil.getLastStrWithoutDot(method);
         } catch (ClassCastException e) {
-            log.error("获取注解{}的请求方式失败，{}属性不是字符串集合",annotation.getType().getName(),SpringMVCConstant.REQUEST_METHOD);
+            log.error("获取注解{}的请求方式失败，{}属性的类型不在预料之内",annotation.getType().getName(),SpringMVCConstant.REQUEST_METHOD);
             return RequestType.UNKNOWN.name();
         }
     }
@@ -236,6 +255,7 @@ public class MethodServiceImpl implements MethodService {
      */
     @Override
     public  boolean isInterfactMethod(JavaMethod method) {
+        log.debug("判断方法[{}]是否有关键注解",method.getName());
         JavaAnnotation annotation = getInterAnnotation(method);
         return annotation !=null;
     }

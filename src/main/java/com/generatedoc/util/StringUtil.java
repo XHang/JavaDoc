@@ -65,4 +65,8 @@ public class StringUtil {
         }
         return false;
     }
+    public static String packageNameToDirName(String packageName){
+       return  packageName.replace(".","/");
+    }
+
 }
