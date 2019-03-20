@@ -50,6 +50,7 @@ public interface ClassService {
        try {
            logger.debug("判断Java文件【{}】里面的类是否是控制器类", javaFile.getName());
            JavaProjectBuilder javaProjectBuilder = new JavaProjectBuilder();
+           javaProjectBuilder.setEncoding("utf-8");
            //将该文件进行Java语法树分析，得到Java文件解析对象
            JavaSource source = javaProjectBuilder.addSource(javaFile);
            if (source == null) {

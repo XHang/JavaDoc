@@ -33,7 +33,7 @@ public class IOUtil {
     public static void saveFile(String fileContent,String descPath){
         BufferedWriter writer = null;
         try {
-            writer = new BufferedWriter(new FileWriter(descPath));
+            writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(descPath),"utf-8"));
             writer.write(fileContent);
         } catch (IOException e) {
             throw new DOCError("保存文件失败",e);

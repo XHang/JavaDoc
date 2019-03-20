@@ -33,7 +33,7 @@
 
    configPath是配置文件的路径，可以不填，或者指定一个,如
 
-   `java -jar generatorDoc.jar --spring.config.location="file:./application.properties`
+   `java -jar generatorDoc.jar --spring.config.location="file:./application.properties"`
 
 3. 等待运行结束
 
